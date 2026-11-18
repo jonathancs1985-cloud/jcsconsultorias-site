@@ -1,0 +1,66 @@
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>TripCost Pro V5.5</title><script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body{font-family:Arial,sans-serif;margin:0;background:#f5f8fc;color:#1e2a36}.wrap{max-width:1500px;margin:0 auto;padding:24px}
+.hero{background:linear-gradient(135deg,#113b67,#1f5a95);color:#fff;border-radius:18px;padding:24px;margin-bottom:20px}
+.grid{display:grid;grid-template-columns:500px 1fr;gap:20px}.card{background:#fff;border:1px solid #d6e0ea;border-radius:18px;padding:18px}
+.field{display:grid;grid-template-columns:1fr 170px;gap:10px;align-items:center;margin-bottom:10px}.dash{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:18px}
+.kpi{padding:14px;background:#fff;border:1px solid #d6e0ea;border-radius:14px}.kpi .lbl{font-size:12px;color:#5c7188;font-weight:700;text-transform:uppercase}.kpi .val{font-size:20px;font-weight:800}
+table{width:100%;border-collapse:collapse}.chart-card{height:360px}th,td{border-bottom:1px solid #e8eef5;padding:10px}th{background:#edf3fb;color:#113b67}
+.btns{display:flex;gap:10px;flex-wrap:wrap}button{border:none;border-radius:12px;padding:12px 14px;font-weight:700;cursor:pointer}.primary{background:#113b67;color:#fff}.secondary{background:#e8eef7;color:#113b67}.warnbtn{background:#fff4e5;color:#a85a00}
+@media(max-width:1200px){.grid{grid-template-columns:1fr}.dash{grid-template-columns:repeat(3,1fr)}}@media(max-width:700px){.dash{grid-template-columns:1fr}.field{grid-template-columns:1fr}}
+</style></head><body><div class="wrap"><div class="hero"><h1>TripCost Pro V5.5</h1><p>Ponto de equilíbrio corrigido, hotel por quartos e pacote completo com backend skeleton.</p></div><div class="grid"><div class="card">
+<div class="field"><label>UF origem</label><select id="ufOrigem"></select></div>
+<div class="field"><label>Cidade origem</label><input id="cidadeOrigem" value="Goiânia"></div>
+<div class="field"><label>UF destino</label><select id="ufDestino"></select></div>
+<div class="field"><label>Cidade destino</label><input id="cidadeDestino" value="Rio de Janeiro"></div>
+<div class="field"><label>Tipo de viagem</label><select id="tipoViagem"><option value="ida_volta" selected>Ida e volta</option><option value="so_ida">Somente ida</option></select></div>
+<div class="field"><label>Retorno à noite?</label><select id="retornoNoite"><option value="nao" selected>Não</option><option value="sim">Sim</option></select></div>
+<div class="field"><label>Temporada</label><select id="temporada"><option>Baixa</option><option selected>Normal</option><option>Alta</option></select></div>
+<div class="field"><label>Número de pessoas</label><select id="pessoas"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option></select></div>
+<div class="field"><label>Data de ida</label><input id="dataIda" type="date" value="2026-04-22"></div>
+<div class="field"><label>Data de volta</label><input id="dataVolta" type="date" value="2026-04-24"></div>
+<div class="field"><label>Distância principal</label><input id="distPrincipal" type="number" value="2420"></div>
+<div class="field"><label>Pedágios auto</label><input id="pedagiosAuto" type="number" value="0"></div>
+<div class="field"><label>Pedágios manual</label><input id="pedagiosManual" type="number" value="220"></div>
+<div class="field"><label>Distância trabalho</label><input id="distTrabalho" type="number" value="120"></div>
+<div class="field"><label>Pedágio trabalho</label><input id="pedagioTrabalho" type="number" value="40"></div>
+<div class="field"><label>Preço combustível</label><input id="combustivel" type="number" value="6.2"></div>
+<div class="field"><label>Consumo carro principal</label><input id="consumoCarro" type="number" value="11"></div>
+<div class="field"><label>Locação carro/dia</label><input id="locacaoCarro" type="number" value="165"></div>
+<div class="field"><label>Hotel diária</label><input id="hotelDiaria" type="number" value="320"></div>
+<div class="field"><label>Quartos hotel carro</label><input id="quartosCarro" type="number" value="1"></div>
+<div class="field"><label>Passagem/pessoa</label><input id="passagem" type="number" value="850"></div>
+<div class="field"><label>Bagagem/pessoa</label><input id="bagagem" type="number" value="120"></div>
+<div class="field"><label>Aeroporto ida/pessoa</label><input id="aeroportoIda" type="number" value="55"></div>
+<div class="field"><label>Aeroporto volta/pessoa</label><input id="aeroportoVolta" type="number" value="55"></div>
+<div class="field"><label>Uber total</label><input id="uber" type="number" value="180"></div>
+<div class="field"><label>Quartos hotel avião</label><input id="quartosAviao" type="number" value="1"></div>
+<div class="field"><label>Locação carro local/dia</label><input id="locacaoLocal" type="number" value="140"></div>
+<div class="field"><label>KM local destino</label><input id="kmLocal" type="number" value="180"></div>
+<div class="field"><label>Consumo carro local</label><input id="consumoLocal" type="number" value="11"></div>
+<div class="field"><label>Pedágio local</label><input id="pedagioLocal" type="number" value="35"></div>
+<div class="btns"><button class="primary" onclick="atualizarTudo()">Atualizar</button><button class="secondary" onclick="abrirGoogleMaps()">Google Maps</button><button class="warnbtn" onclick="window.print()">PDF</button></div>
+</div><div><div class="dash">
+<div class="kpi"><div class="lbl">Noites base</div><div class="val" id="kpiNoites">-</div></div>
+<div class="kpi"><div class="lbl">Hotel avião</div><div class="val" id="kpiHotelAviao">-</div></div>
+<div class="kpi"><div class="lbl">Hotel carro</div><div class="val" id="kpiHotelCarro">-</div></div>
+<div class="kpi"><div class="lbl">Locação principal</div><div class="val" id="kpiLocPrincipal">-</div></div>
+<div class="kpi"><div class="lbl">Quartos</div><div class="val" id="kpiQuartos">-</div></div>
+<div class="kpi"><div class="lbl">Recomendação</div><div class="val" id="kpiReco">-</div></div>
+</div><div class="card"><table><thead><tr><th>Cenário</th><th>Custo total</th><th>Custo por pessoa</th><th>Observação</th></tr></thead><tbody id="tbodyComparacao"></tbody></table></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px"><div class="card chart-card"><canvas id="lineChart"></canvas></div><div class="card chart-card"><canvas id="seasonChart"></canvas></div></div>
+</div></div></div>
+<script>
+const UFS=["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
+const q=id=>document.getElementById(id), fmt=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const multTemporada=t=>({'Baixa':0.85,'Normal':1,'Alta':1.3}[t]||1); let lineChart,seasonChart;
+function fillUFs(){['ufOrigem','ufDestino'].forEach(id=>q(id).innerHTML=UFS.map(u=>`<option value="${u}">${u}</option>`).join('')); q('ufOrigem').value='GO'; q('ufDestino').value='RJ';}
+function diffDays(a,b){return Math.floor((new Date(b+'T12:00:00')-new Date(a+'T12:00:00'))/86400000);}
+function inp(){return {ufOrigem:q('ufOrigem').value,cidadeOrigem:q('cidadeOrigem').value,ufDestino:q('ufDestino').value,cidadeDestino:q('cidadeDestino').value,tipoViagem:q('tipoViagem').value,retornoNoite:q('retornoNoite').value,temporada:q('temporada').value,pessoas:+q('pessoas').value,dataIda:q('dataIda').value,dataVolta:q('dataVolta').value,distPrincipal:+q('distPrincipal').value,pedagiosAuto:+q('pedagiosAuto').value,pedagiosManual:+q('pedagiosManual').value,distTrabalho:+q('distTrabalho').value,pedagioTrabalho:+q('pedagioTrabalho').value,combustivel:+q('combustivel').value,consumoCarro:+q('consumoCarro').value,locacaoCarro:+q('locacaoCarro').value,hotelDiaria:+q('hotelDiaria').value,quartosCarro:+q('quartosCarro').value,passagem:+q('passagem').value,bagagem:+q('bagagem').value,aeroportoIda:+q('aeroportoIda').value,aeroportoVolta:+q('aeroportoVolta').value,uber:+q('uber').value,quartosAviao:+q('quartosAviao').value,locacaoLocal:+q('locacaoLocal').value,kmLocal:+q('kmLocal').value,consumoLocal:+q('consumoLocal').value,pedagioLocal:+q('pedagioLocal').value};}
+function derived(i){const n=Math.max(0,diffDays(i.dataIda,i.dataVolta)); if(i.tipoViagem==='so_ida') return {base:0,hotelA:0,hotelC:0,locMain:1,locLocal:0}; const red=i.retornoNoite==='sim'?1:0; return {base:n,hotelA:Math.max(0,n-red),hotelC:Math.max(0,n-red),locMain:Math.max(1,n+1-red),locLocal:Math.max(0,n-red)};}
+function calc(i){const d=derived(i); const carTotal=(i.locacaoCarro*d.locMain)+((i.distPrincipal/Math.max(i.consumoCarro,0.1))*i.combustivel)+((i.distTrabalho/Math.max(i.consumoCarro,0.1))*i.combustivel)+i.pedagiosAuto+i.pedagiosManual+i.pedagioTrabalho+(i.hotelDiaria*d.hotelC*i.quartosCarro); const localTotal=(i.locacaoLocal*d.locLocal)+(d.locLocal===0?0:(i.kmLocal/Math.max(i.consumoLocal,0.1))*i.combustivel)+(d.locLocal===0?0:i.pedagioLocal); const airVar=((i.passagem*multTemporada(i.temporada))+i.bagagem+i.aeroportoIda+i.aeroportoVolta); const airFixed=i.uber+(i.hotelDiaria*d.hotelA*i.quartosAviao)+localTotal; const planeTotal=airFixed+(airVar*i.pessoas); return {d,carTotal,planeTotal,carPP:carTotal/i.pessoas,planePP:planeTotal/i.pessoas,airVar,airFixed};}
+function charts(i,r){const labels=['1','2','3','4','5']; const car=labels.map((_,ix)=>r.carTotal/(ix+1)); const air=labels.map((_,ix)=>((r.airFixed+(r.airVar*(ix+1)))/(ix+1))); if(lineChart) lineChart.destroy(); lineChart=new Chart(q('lineChart'),{type:'line',data:{labels,datasets:[{label:'Carro/pessoa',data:car,borderColor:'#1b8f4b',tension:0.25},{label:'Avião+local/pessoa',data:air,borderColor:'#d64545',tension:0.25}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}}); const seasons=['Baixa','Normal','Alta']; const vals=seasons.map(s=>(((i.passagem*multTemporada(s)+i.bagagem+i.aeroportoIda+i.aeroportoVolta)*i.pessoas)+r.airFixed)); if(seasonChart) seasonChart.destroy(); seasonChart=new Chart(q('seasonChart'),{type:'bar',data:{labels:seasons,datasets:[{label:'Avião+local',data:vals,backgroundColor:['#f0ad4e','#1f77d0','#d64545']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}});}
+function atualizarTudo(){const i=inp(); const r=calc(i); q('kpiNoites').textContent=r.d.base; q('kpiHotelAviao').textContent=r.d.hotelA; q('kpiHotelCarro').textContent=r.d.hotelC; q('kpiLocPrincipal').textContent=r.d.locMain; q('kpiQuartos').textContent=`A ${i.quartosAviao} | C ${i.quartosCarro}`; q('kpiReco').textContent=r.carTotal<r.planeTotal?'🚗 Vale carro':'✈️ Melhor avião'; q('tbodyComparacao').innerHTML=`<tr><td>Carro</td><td>${fmt(r.carTotal)}</td><td>${fmt(r.carPP)}</td><td>Hotel ${r.d.hotelC} × ${i.quartosCarro}</td></tr><tr><td>Avião + carro local</td><td>${fmt(r.planeTotal)}</td><td>${fmt(r.planePP)}</td><td>Hotel ${r.d.hotelA} × ${i.quartosAviao}</td></tr>`; charts(i,r);}
+function abrirGoogleMaps(){const i=inp(); const o=encodeURIComponent(`${i.cidadeOrigem}, ${i.ufOrigem}, Brasil`); const d=encodeURIComponent(`${i.cidadeDestino}, ${i.ufDestino}, Brasil`); window.open(`https://www.google.com/maps/dir/?api=1&origin=${o}&destination=${d}&travelmode=driving`,'_blank');}
+document.querySelectorAll('input,select').forEach(el=>{el.addEventListener('input',atualizarTudo);el.addEventListener('change',atualizarTudo);}); fillUFs(); atualizarTudo();
+</script></body></html>

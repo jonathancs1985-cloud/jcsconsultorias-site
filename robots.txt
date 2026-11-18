@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /demonstracao/
+Sitemap: https://jcsconsultorias.com/sitemap.xml

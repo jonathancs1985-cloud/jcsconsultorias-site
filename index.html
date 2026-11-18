@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<!--
+THESIS: a rodovia contada como o setor a lê — um diagrama linear com km, ativos e evidências — e não como landing page de "tecnologia" com cards genéricos.
+OWN-WORLD: azul-marinho JCS (#0A2740) dominando faixas inteiras, papel frio (#F3F6F9), azul do anel do logotipo (#2F95D4) para consultoria e verde RodoviaScan (#7CC242) para sistemas; régua de estaqueamento, marcos de km e listas regradas como as de um PER.
+STORY: o visitante entende que a JCS une consultoria regulatória, verificação independente e software próprio; vê telas e vídeos reais; experimenta o mapa e o protótipo; fala com a JCS.
+FIRST VIEWPORT: título à esquerda, vídeo real de detecção à direita, diagrama linear animado com leitura de km atravessando toda a largura; ações "Falar com a JCS" e "Ver o sistema em ação".
+FORM: diagrama linear rodoviário (1º da lista), encenação "leitura em campo"; sem semente de script (Node indisponível).
+-->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JCS Consultorias · Consultoria, Verificação Independente e Sistemas para rodovias</title>
+<meta name="description" content="JCS Consultorias e JCS Sistemas: consultoria regulatória e contratual para concessões rodoviárias, Verificador Independente e software próprio — RodoviaScan IA e TripCost Pro.">
+<meta name="theme-color" content="#0A2740">
+<link rel="canonical" href="https://jcsconsultorias.com/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:site_name" content="JCS Consultorias">
+<meta property="og:title" content="JCS Consultorias · Consultoria, Verificação Independente e Sistemas para rodovias">
+<meta property="og:description" content="Consultoria regulatória, Verificador Independente, RodoviaScan IA e TripCost Pro.">
+<meta property="og:url" content="https://jcsconsultorias.com/">
+<meta property="og:image" content="https://jcsconsultorias.com/assets/img/poster-deteccoes.webp">
+<link rel="icon" type="image/png" href="assets/img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,300..900;1,100,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Organization","name":"JCS Consultorias Ltda.","url":"https://jcsconsultorias.com/","logo":"https://jcsconsultorias.com/assets/img/jcs-simbolo.png","email":"jonathan@jcsconsultorias.com","telephone":"+55 61 98185-8578","taxID":"26.378.322/0001-62","address":{"@type":"PostalAddress","addressLocality":"Anápolis","addressRegion":"GO","addressCountry":"BR"},"brand":[{"@type":"Brand","name":"RodoviaScan IA"},{"@type":"Brand","name":"TripCost Pro"}]}
+</script>
+</head>
+<body>
+<a class="skip" href="#conteudo">Pular para o conteúdo</a>
+
+<header class="topo" id="topo">
+  <div class="topo-in">
+    <a class="marca" href="#inicio" aria-label="JCS Consultorias, início">
+      <img src="assets/img/jcs-simbolo-branco.png" alt="" width="52" height="35">
+      <span><b>JCS</b><small>Consultorias · Sistemas</small></span>
+    </a>
+    <nav class="menu" id="menu" aria-label="Principal">
+      <a href="#consultoria">Consultoria</a>
+      <a href="#verificador">Verificador Independente</a>
+      <a href="#rodoviascan">RodoviaScan IA</a>
+      <a href="#tripcost">TripCost Pro</a>
+      <a href="#demonstracoes">Demonstrações</a>
+      <a href="#ajuda">Dúvidas</a>
+      <a class="btn btn-claro" href="#contato">Fale conosco</a>
+    </nav>
+    <button class="menu-botao" id="menuBotao" aria-expanded="false" aria-controls="menu"><span></span><span></span><span class="sr">Abrir menu</span></button>
+  </div>
+</header>
+
+<main id="conteudo">
+<section class="hero" id="inicio" aria-labelledby="hero-titulo">
+  <div class="hero-grade">
+    <div class="hero-texto">
+      <h1 id="hero-titulo">Engenharia, regulação e software para quem cuida de rodovias.</h1>
+      <p class="lead">A JCS reúne consultoria técnica e regulatória, verificação independente e sistemas próprios — <b>RodoviaScan IA</b> e <b>TripCost Pro</b> — para transformar campo, contrato e dados em decisão.</p>
+      <div class="acoes">
+        <a class="btn btn-verde" href="#contato">Falar com a JCS</a>
+        <a class="btn btn-linha" href="#demonstracoes">Ver o sistema em ação</a>
+      </div>
+    </div>
+    <figure class="hero-video">
+      <video src="assets/media/rodoviascan-deteccoes.mp4" poster="assets/img/poster-deteccoes.webp" autoplay muted loop playsinline preload="metadata" aria-label="Detecções do RodoviaScan IA em vídeo real de rodovia"></video>
+      <figcaption><span class="ponto-vivo" aria-hidden="true"></span>Vídeo real · detecções do RodoviaScan IA em rodovia</figcaption>
+    </figure>
+  </div>
+
+  <div class="sld" aria-label="Diagrama linear: leitura de ativos ao longo do trecho" role="img">
+    <div class="sld-regua" id="sldRegua" aria-hidden="true"></div>
+    <div class="sld-pista" aria-hidden="true"><i></i><i></i></div>
+    <div class="sld-ativos" id="sldAtivos" aria-hidden="true"></div>
+    <div class="sld-cursor" id="sldCursor" aria-hidden="true"><span id="sldLeitura">km 214+000</span></div>
+  </div>
+</section>
+
+<section class="frentes" aria-label="Frentes de atuação">
+  <article class="frente frente-consultoria">
+    <h2><span>JCS</span> Consultorias</h2>
+    <p>Consultoria técnica, contratual e regulatória para concessões rodoviárias, agências e investidores — e verificação independente com o escopo integral do Termo de Referência da ANTT.</p>
+    <ul>
+      <li><a href="#consultoria">Consultorias para concessões e gestão de empresas</a></li>
+      <li><a href="#verificador">Verificador Independente</a></li>
+    </ul>
+  </article>
+  <article class="frente frente-sistemas">
+    <h2><span>JCS</span> Sistemas</h2>
+    <p>Software próprio, nascido da prática em concessões: inspeção rodoviária com inteligência artificial e comparação de custos de viagem e transporte.</p>
+    <ul>
+      <li><a href="#rodoviascan">RodoviaScan IA · inspeção rodoviária inteligente</a></li>
+      <li><a href="#tripcost">TripCost Pro · custos de viagem e transporte</a></li>
+    </ul>
+  </article>
+</section>
+
+<section class="secao papel" id="consultoria" aria-labelledby="consultoria-titulo">
+  <div class="secao-in">
+    <div class="cabeca">
+      <h2 id="consultoria-titulo">Consultorias para concessões, agências e investidores</h2>
+      <p>Mais de 20 anos em infraestrutura rodoviária, em grandes grupos de concessões e em assuntos regulatórios e contratuais junto à ANTT. Atuamos do diagnóstico à entrega, com memória de cálculo e evidência em cada conclusão.</p>
+    </div>
+    <ol class="indice">
+      <li><h3>Gestão contratual e regulatória</h3><p>Interpretação contratual, obrigações do PER, correspondências, pleitos e interface com a agência reguladora.</p></li>
+      <li><h3>Reequilíbrio econômico-financeiro e revisão tarifária</h3><p>Elaboração de reequilíbrios e revisões tarifárias, estruturação de pleitos e memória de cálculo auditável.</p></li>
+      <li><h3>Fatores A, D e E, obras obrigatórias e eventogramas</h3><p>Apuração, acompanhamento e conferência dos mecanismos contratuais de desconto e de investimento.</p></li>
+      <li><h3>Classificação de concessionárias · RCR 04</h3><p>Simulações, dados de entrada, notas, critérios e relatórios da Resolução ANTT nº 6.053/2024.</p></li>
+      <li><h3>PMO regulatório e de projetos</h3><p>Novos negócios, planejamento estratégico, gestão de portfólio, processos e indicadores.</p></li>
+      <li><h3>Bases, dashboards e relatórios técnicos</h3><p>Bases estruturadas, planilhas inteligentes, gestão documental e painéis de decisão.</p></li>
+      <li><h3>Gestão de empresas e processos</h3><p>Melhoria de processos, qualidade e eficiência — a origem da JCS e o que sustenta cada produto.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section class="secao marinho" id="verificador" aria-labelledby="verificador-titulo">
+  <div class="secao-in">
+    <div class="cabeca">
+      <h2 id="verificador-titulo">Verificador Independente</h2>
+      <p>Atendemos integralmente o escopo do Termo de Referência da ANTT: auditorias, parâmetros de desempenho, obras obrigatórias, evidências contratuais, ICM, governança e relatórios técnicos — com o RodoviaScan IA dando escala e rastreabilidade ao campo.</p>
+    </div>
+    <ol class="etapas">
+      <li><b>Plano de trabalho</b><span>Escopo, cronograma, amostragem e responsáveis por disciplina.</span></li>
+      <li><b>Auditoria de parâmetros</b><span>Parâmetros de desempenho e indicadores conferidos contra o contrato.</span></li>
+      <li><b>Obras e investimentos</b><span>Acompanhamento físico de obras obrigatórias e cronogramas.</span></li>
+      <li><b>Evidências georreferenciadas</b><span>Foto, vídeo, km, coordenada e data em cada constatação.</span></li>
+      <li><b>Relatórios técnicos</b><span>Relatórios, fichas e mapas com memória de cálculo.</span></li>
+      <li><b>Comunicação com as partes</b><span>Interface com agência, concessionária e demais envolvidos.</span></li>
+    </ol>
+    <div class="disciplinas" aria-label="Disciplinas atendidas">
+      <h3>Disciplinas atendidas</h3>
+      <ul>
+        <li>Pavimento</li><li>Sinalização</li><li>Elementos de proteção e segurança</li><li>Drenagem e OAC</li><li>Obras de arte especiais</li><li>Faixa de domínio</li><li>Terraplenos</li><li>Edificações</li><li>Sistemas elétricos e iluminação</li><li>Túneis</li><li>Análise de tráfego</li><li>Dados de operação</li><li>ICM</li>
+      </ul>
+    </div>
+    <div class="dupla">
+      <figure class="tela"><img src="assets/img/tela-verificador.webp" alt="Tela do Verificador Independente no RodoviaScan IA: grupos de entrega e acompanhamento" loading="lazy" width="1440" height="810"><figcaption>Gestão dos entregáveis do Verificador Independente no RodoviaScan IA.</figcaption></figure>
+      <figure class="tela"><a href="#demonstracoes" data-demo="e03"><img src="assets/img/e03-mapa.webp" alt="Mapa de levantamento de campo com 9.561 fotos em 8 disciplinas" loading="lazy" width="1440" height="798"></a><figcaption>Levantamento de campo: 9.561 fotos, 8 disciplinas, km e quantitativos. <a href="#demonstracoes" data-demo="e03">Explore o mapa interativo</a>.</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section class="secao papel produto" id="rodoviascan" aria-labelledby="rs-titulo">
+  <div class="secao-in">
+    <div class="produto-cabeca">
+      <img src="assets/img/rodoviascan-icone.png" alt="" width="96" height="96">
+      <div>
+        <h2 id="rs-titulo">RodoviaScan <em>IA</em></h2>
+        <p class="sub">Inspeção rodoviária inteligente</p>
+      </div>
+    </div>
+    <p class="lead escuro">Transforma vídeos, fotos, GPS, planilhas e documentos técnicos em inteligência de gestão rodoviária — com rastreabilidade entre evidência, quilômetro, ativo e obrigação contratual.</p>
+
+    <ol class="fluxo" aria-label="Fluxo operacional do levantamento">
+      <li><b>Preparar base</b><span>Empresas, contratos, segmentos, cadastros, normas, PER e manuais.</span></li>
+      <li><b>Importar evidências</b><span>Vídeos, GPS, KMZ/KML, CSV, planilhas e documentos.</span></li>
+      <li><b>Processar IA</b><span>Detecção por classes de ativos, priorização de modelos e filtros técnicos.</span></li>
+      <li><b>Revisar e editar</b><span>Validação humana de ocorrência, criticidade, km e evidência.</span></li>
+      <li><b>Relatar e decidir</b><span>Relatórios, mapas, histórico, pendências e plano de ação.</span></li>
+    </ol>
+
+    <div class="galeria" data-galeria>
+      <div class="galeria-abas" role="tablist" aria-label="Telas reais do RodoviaScan IA">
+        <button role="tab" aria-selected="true" data-src="assets/img/tela-levantamento.webp" data-legenda="Levantamento: mapa e revisão dos apontamentos detectados pela IA.">Levantamento</button>
+        <button role="tab" aria-selected="false" data-src="assets/img/tela-calculo.webp" data-legenda="Cálculo: memória, índices e resultados por quilômetro.">Cálculo por km</button>
+        <button role="tab" aria-selected="false" data-src="assets/img/tela-mapa-nacional.webp" data-legenda="Mapa geral: visão nacional dos levantamentos e registros de ativos.">Mapa nacional</button>
+        <button role="tab" aria-selected="false" data-src="assets/img/powerbi-geral.webp" data-legenda="Power BI direto do banco: ranking RCR 04, indicadores e cenários, atualizado em tempo real.">Power BI público</button>
+        <button role="tab" aria-selected="false" data-src="assets/img/tela-powerbi-rcr.webp" data-legenda="Publicação RCR: cenários, critérios por contrato, resultados e cobertura.">Classificação RCR 04</button>
+        <button role="tab" aria-selected="false" data-src="assets/img/tela-macroindicador.webp" data-legenda="Macroindicadores: distribuição, filtros e avaliações dos dados carregados.">Macroindicadores</button>
+        <button role="tab" aria-selected="false" data-src="assets/img/artesp-validacao.webp" data-legenda="Fiscalização automatizada: pós-processamento e validação de ativos com imagem original preservada.">Fiscalização</button>
+      </div>
+      <figure class="galeria-palco">
+        <img id="galeriaImg" src="assets/img/tela-levantamento.webp" alt="Tela real do RodoviaScan IA" width="1440" height="810" loading="lazy">
+        <figcaption id="galeriaLegenda">Levantamento: mapa e revisão dos apontamentos detectados pela IA.</figcaption>
+      </figure>
+    </div>
+
+    <dl class="recursos">
+      <div><dt>IA aplicada ao vídeo</dt><dd>Identificação de elementos rodoviários por modelos de IA, sempre com validação técnica.</dd></div>
+      <div><dt>Evidência georreferenciada</dt><dd>Coordenadas, km, mapas e vínculo com vídeo, documentos e histórico.</dd></div>
+      <div><dt>Gestão documental</dt><dd>Busca interna em PER, contratos, manuais, normas e relatórios.</dd></div>
+      <div><dt>Relatórios executivos</dt><dd>Criticidade, mapa, histórico de evolução, Power BI e apoio à decisão.</dd></div>
+      <div><dt>Governança</dt><dd>Perfis de acesso, licenças por prazo ou cliente e trilha de auditoria.</dd></div>
+      <div><dt>Implantação assistida</dt><dd>Diagnóstico, piloto com dados reais, treinamento e evolução por cliente.</dd></div>
+    </dl>
+
+    <div class="campo">
+      <figure class="campo-video">
+        <video src="assets/media/kit-cftv.mp4" poster="assets/img/frame-barreiras.webp" muted loop playsinline preload="none" data-auto aria-label="Captura com quatro câmeras embarcadas em veículo"></video>
+      </figure>
+      <div class="campo-texto">
+        <h3>Do veículo ao relatório</h3>
+        <p>Quatro câmeras embarcadas registram o trecho com data, hora, coordenada e velocidade. O RodoviaScan IA processa o vídeo, propõe as ocorrências e entrega à equipe técnica a revisão — que permanece auditável.</p>
+        <p class="destaque">O sistema não substitui a análise técnica: acelera a triagem, organiza evidências e dá escala com controle e padronização.</p>
+      </div>
+    </div>
+
+    <figure class="demo-video">
+      <video controls preload="none" poster="assets/img/tela-mapa-nacional.webp" src="assets/media/rodoviascan-demonstracao.mp4" aria-label="Demonstração narrada do RodoviaScan IA"></video>
+      <figcaption>Demonstração do RodoviaScan IA · 5 minutos</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="secao claro produto" id="tripcost" aria-labelledby="tc-titulo">
+  <div class="secao-in">
+    <div class="produto-cabeca">
+      <span class="tc-logo"><img src="assets/img/tripcost-pro-logo.png" alt="TripCost Pro" width="360" height="206"></span>
+      <div>
+        <h2 id="tc-titulo">TripCost <em>Pro</em></h2>
+        <p class="sub">Comparação inteligente de custos de viagem e transporte</p>
+      </div>
+    </div>
+    <p class="lead escuro">Cotação de viagens e transporte em poucos cliques: compara modais, custos e tempo, com memória de cálculo, para apoiar decisões executivas.</p>
+    <ul class="modais" aria-label="Modais comparados">
+      <li>Carro</li><li>Avião</li><li>Ônibus</li><li>Caminhão e carga</li><li>Veículo elétrico</li><li>Deslocamento local</li>
+    </ul>
+    <div class="tc-grade">
+      <div class="galeria" data-galeria>
+        <div class="galeria-abas" role="tablist" aria-label="Telas do TripCost Pro">
+          <button role="tab" aria-selected="true" data-src="assets/img/tripcost-rota.webp" data-legenda="Rotas detalhadas para todo o Brasil, com pedágios, postos, pontos de parada e recarga elétrica.">Rotas</button>
+          <button role="tab" aria-selected="false" data-src="assets/img/tripcost-comparativo.webp" data-legenda="Comparativo executivo de custos e tempo entre modais.">Comparativo</button>
+          <button role="tab" aria-selected="false" data-src="assets/img/tripcost-graficos.webp" data-legenda="Ponto de equilíbrio e impacto de temporada nos custos.">Gráficos</button>
+        </div>
+        <figure class="galeria-palco">
+          <img src="assets/img/tripcost-rota.webp" alt="Tela do TripCost Pro" width="1440" height="752" loading="lazy">
+          <figcaption>Rotas detalhadas para todo o Brasil, com pedágios, postos, pontos de parada e recarga elétrica.</figcaption>
+        </figure>
+      </div>
+      <dl class="recursos recursos-coluna">
+        <div><dt>Rotas inteligentes</dt><dd>Todas as cidades do Brasil, distâncias, pedágios, postos, restaurantes e pontos de descanso.</dd></div>
+        <div><dt>Custo total da viagem</dt><dd>Combustível ou energia, tarifas, hospedagem, alimentação, tempo e deslocamento local.</dd></div>
+        <div><dt>Relatório e decisão</dt><dd>Mapa, gráficos, cenários, economia e recomendação gerencial com memória de cálculo.</dd></div>
+        <div><dt>Governança corporativa</dt><dd>Perfis, políticas de viagem, licenças e histórico auditável das simulações.</dd></div>
+      </dl>
+    </div>
+    <p class="publico">Para empresas e grupos corporativos, concessionárias, transportadoras, órgãos públicos, consultorias e frotas elétricas.</p>
+
+    <div class="amostras" aria-labelledby="amostras-titulo">
+      <h3 id="amostras-titulo">Experimente o TripCost Pro</h3>
+      <ul>
+        <li><a href="#demonstracoes" data-demo="tripcost"><b>Simulador online</b><span>Carro × avião com carro local, temporada, hotel e ponto de equilíbrio por número de pessoas.</span><em>Abrir simulador →</em></a></li>
+        <li><a href="#demonstracoes" data-demo="powerbi"><b>Painel Power BI</b><span>Praças de pedágio e postos de combustíveis usados no cálculo das rotas.</span><em>Abrir painel →</em></a></li>
+        <li><a href="assets/docs/TripCost_Pro_V5_5_Planilha.xlsx" download><b>Planilha de cálculo</b><span>Entradas, comparação de cenários, memória do carro e do avião e dashboard executivo.</span><em>Baixar Excel · 27 KB</em></a></li>
+        <li class="amostra-relatorio"><a href="assets/docs/TripCost_Pro_Relatorio_Executivo_exemplo.pdf" target="_blank" rel="noopener"><img src="assets/img/tripcost-relatorio.webp" alt="Primeira página do relatório executivo do TripCost Pro" loading="lazy" width="745" height="737"><b>Exemplo de relatório executivo</b><span>Melhor opção, economia, tempo de viagem, rotas e praças de pedágio.</span><em>Abrir PDF · 10 páginas · 5,8 MB</em></a></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="secao marinho" id="demonstracoes" aria-labelledby="demo-titulo">
+  <div class="secao-in">
+    <div class="cabeca">
+      <h2 id="demo-titulo">Experimente com dados reais</h2>
+      <p>Quatro demonstrações navegáveis, direto no navegador. Os dados de campo, da malha e de pedágios são reais; as telas de fiscalização usam dados simulados quando indicado.</p>
+    </div>
+    <div class="demos" data-demos>
+      <div class="demo-abas" role="tablist" aria-label="Demonstrações interativas">
+        <button role="tab" aria-selected="true" data-demo-id="e03">Mapa de levantamento de campo</button>
+        <button role="tab" aria-selected="false" data-demo-id="artesp">Fiscalização automatizada · protótipo</button>
+        <button role="tab" aria-selected="false" data-demo-id="tripcost">Simulador TripCost Pro</button>
+        <button role="tab" aria-selected="false" data-demo-id="powerbi">Power BI · pedágios e postos</button>
+      </div>
+      <div class="demo-palco" id="demoPalco">
+        <div class="demo-capa" data-capa="e03">
+          <img src="assets/img/e03-mapa.webp" alt="" loading="lazy" width="1440" height="798">
+          <div>
+            <h3>9.561 fotos em 8 disciplinas, sobre o mapa</h3>
+            <p>Filtre por disciplina, rodovia e data; veja quantitativos, km estimado, curvas de nível, relevo e satélite; abra cada registro no Google Maps.</p>
+            <button class="btn btn-verde" data-carregar="demonstracao/e03/index.html">Carregar o mapa interativo</button>
+            <a class="link-claro" href="demonstracao/e03/index.html" target="_blank" rel="noopener">Abrir em tela cheia ↗</a>
+          </div>
+        </div>
+        <div class="demo-capa" data-capa="artesp" hidden>
+          <img src="assets/img/artesp-painel.webp" alt="" loading="lazy" width="1440" height="798">
+          <div>
+            <h3>Fiscalização automatizada de ativos</h3>
+            <p>Malha e ativos reais dos dados abertos da ARTESP; pós-processamento, ocorrências, validação, roteirização, taxonomia e relatórios.</p>
+            <button class="btn btn-verde" data-carregar="demonstracao/artesp/index.html">Carregar o protótipo</button>
+            <a class="link-claro" href="demonstracao/artesp/index.html" target="_blank" rel="noopener">Abrir em tela cheia ↗</a>
+          </div>
+        </div>
+        <div class="demo-capa" data-capa="tripcost" hidden>
+          <img src="assets/img/tripcost-graficos.webp" alt="" loading="lazy" width="1428" height="742">
+          <div>
+            <h3>Carro ou avião? Simule em segundos</h3>
+            <p>Informe origem, destino, datas, pessoas e custos; o simulador compara os cenários, recomenda o modal e mostra o ponto de equilíbrio e o efeito da temporada.</p>
+            <button class="btn btn-verde" data-carregar="demonstracao/tripcost/index.html">Carregar o simulador</button>
+            <a class="link-claro" href="demonstracao/tripcost/index.html" target="_blank" rel="noopener">Abrir em tela cheia ↗</a>
+          </div>
+        </div>
+        <div class="demo-capa" data-capa="powerbi" hidden>
+          <img src="assets/img/tripcost-rota.webp" alt="" loading="lazy" width="1440" height="752">
+          <div>
+            <h3>Praças de pedágio e postos de combustíveis</h3>
+            <p>Painel público do Power BI com a base de pedágios e postos que alimenta o cálculo de rotas do TripCost Pro.</p>
+            <button class="btn btn-verde" data-carregar="https://app.powerbi.com/view?r=eyJrIjoiYzMwMzY1MzMtNDc5NC00ZGJkLWI5OWUtMzdjMTU2Njk0NzYyIiwidCI6IjY5ZWIxZDAzLTNjOTktNDkxMS1hMWMwLTE5OTY2NmNjNjMzNSJ9&amp;embedImagePlaceholder=true">Carregar o painel</button>
+            <a class="link-claro" href="https://app.powerbi.com/view?r=eyJrIjoiYzMwMzY1MzMtNDc5NC00ZGJkLWI5OWUtMzdjMTU2Njk0NzYyIiwidCI6IjY5ZWIxZDAzLTNjOTktNDkxMS1hMWMwLTE5OTY2NmNjNjMzNSJ9&amp;embedImagePlaceholder=true" target="_blank" rel="noopener">Abrir no Power BI ↗</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="secao papel" id="sobre" aria-labelledby="sobre-titulo">
+  <div class="secao-in sobre">
+    <div>
+      <h2 id="sobre-titulo">Experiência de concessão, traduzida em produto</h2>
+      <p>A JCS nasceu da gestão de empresas e da prática em concessões rodoviárias: engenharia, regulação, contratos e interação com órgãos públicos. Cada sistema que desenvolvemos responde a um problema que vivemos em campo e no contrato.</p>
+      <dl class="fatos">
+        <div><dt>Missão</dt><dd>Promover o desenvolvimento das empresas com produtos e serviços de qualidade para uma gestão eficiente.</dd></div>
+        <div><dt>Visão</dt><dd>Ser reconhecida pela excelência em soluções de gestão e melhoria da qualidade dos serviços.</dd></div>
+        <div><dt>Valores</dt><dd>Comprometimento, colaboração, sinergia, ética, honestidade, qualidade, excelência e respeito.</dd></div>
+      </dl>
+    </div>
+    <ul class="credenciais" aria-label="Credenciais">
+      <li><b>20+ anos</b> em infraestrutura rodoviária</li>
+      <li><b>Concessões</b> em grandes grupos de rodovias</li>
+      <li><b>ANTT</b> · assuntos regulatórios e contratuais</li>
+      <li><b>INPI</b> · registro do RodoviaScan IA</li>
+      <li><b>CRA-GO</b> 6-00758 · <b>CRT-GO</b> 011.658.500-52</li>
+    </ul>
+  </div>
+</section>
+
+<section class="secao claro" id="ajuda" aria-labelledby="ajuda-titulo">
+  <div class="secao-in ajuda">
+    <div>
+      <h2 id="ajuda-titulo">Perguntas frequentes</h2>
+      <p>Respostas rápidas sobre acesso, dados e implantação. Não encontrou a sua? Fale com a JCS.</p>
+      <a class="btn btn-azul" href="#contato">Enviar uma pergunta</a>
+    </div>
+    <div class="faq">
+      <details><summary>Como acesso o RodoviaScan IA?</summary><p>O acesso é liberado por contrato, com usuário, senha, empresa e perfil definidos na implantação. Fale com a JCS para conhecer as opções de licença.</p></details>
+      <details><summary>Quais arquivos posso usar?</summary><p>Vídeos, fotos, GPS, KMZ/KML, planilhas de cadastro e documentos técnicos como PER, contratos, manuais e normas.</p></details>
+      <details><summary>Como funciona a implantação?</summary><p>Em ondas: diagnóstico, configuração da base, piloto técnico com dados reais, treinamento e evolução conforme o uso.</p></details>
+      <details><summary>A IA substitui a equipe técnica?</summary><p>Não. O RodoviaScan IA acelera a triagem e organiza as evidências; a validação de cada ocorrência continua com a equipe técnica, com histórico auditável.</p></details>
+      <details><summary>Como tiro dúvidas de operação?</summary><p>Fale com a JCS pelos canais de contato desta página; o suporte é feito diretamente por quem desenvolve o sistema.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="secao contato" id="contato" aria-labelledby="contato-titulo">
+  <div class="secao-in contato-grade">
+    <div>
+      <h2 id="contato-titulo">Vamos conversar sobre o seu contrato, a sua malha ou o seu sistema.</h2>
+      <ul class="canais">
+        <li><a href="https://wa.me/5561981858578" target="_blank" rel="noopener"><b>WhatsApp</b><span>+55 (61) 98185-8578</span></a></li>
+        <li><a href="mailto:jonathan@jcsconsultorias.com"><b>E-mail</b><span>jonathan@jcsconsultorias.com</span></a></li>
+        <li><span class="canal-fixo"><b>Responsável</b><span>Jonathan Carvalho Simões · Anápolis (GO)</span></span></li>
+      </ul>
+    </div>
+    <form class="formulario" id="formContato" novalidate>
+      <div class="campo-form"><label for="fNome">Nome</label><input id="fNome" name="nome" autocomplete="name" required></div>
+      <div class="campo-form"><label for="fEmpresa">Empresa ou órgão</label><input id="fEmpresa" name="empresa" autocomplete="organization"></div>
+      <div class="campo-form"><label for="fEmail">E-mail</label><input id="fEmail" name="email" type="email" autocomplete="email" required></div>
+      <div class="campo-form"><label for="fAssunto">Assunto</label>
+        <select id="fAssunto" name="assunto"><option>Consultoria</option><option>Verificador Independente</option><option>RodoviaScan IA</option><option>TripCost Pro</option><option>Outro assunto</option></select></div>
+      <div class="campo-form largo"><label for="fMensagem">Mensagem</label><textarea id="fMensagem" name="mensagem" rows="4" required></textarea></div>
+      <p class="form-erro" id="formErro" role="alert" hidden></p>
+      <div class="form-acoes largo">
+        <button class="btn btn-verde" type="submit">Enviar por e-mail</button>
+        <button class="btn btn-linha" type="button" id="formWhats">Enviar pelo WhatsApp</button>
+      </div>
+      <p class="form-nota largo">A mensagem é aberta no seu aplicativo de e-mail ou no WhatsApp; este site não armazena dados.</p>
+    </form>
+  </div>
+</section>
+</main>
+
+<footer class="rodape">
+  <div class="rodape-in">
+    <div class="rodape-marca"><img src="assets/img/jcs-simbolo-branco.png" alt="" width="52" height="35"><span><b>JCS Consultorias Ltda.</b><br>CNPJ 26.378.322/0001-62 · Anápolis (GO)</span></div>
+    <nav aria-label="Rodapé"><a href="#consultoria">Consultoria</a><a href="#verificador">Verificador Independente</a><a href="#rodoviascan">RodoviaScan IA</a><a href="#tripcost">TripCost Pro</a><a href="#ajuda">Dúvidas</a><a href="privacidade.html">Privacidade</a></nav>
+    <p class="rodape-nota">Gestão · Tecnologia · Verificação independente</p>
+  </div>
+</footer>
+<script src="assets/js/site.js" defer></script>
+</body>
+</html>
