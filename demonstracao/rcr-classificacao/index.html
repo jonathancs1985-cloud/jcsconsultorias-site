@@ -1,0 +1,2417 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RodoviaScan · Power BI (direto do banco)</title>
+<style>
+  :root {
+    --brand: #0b5fff;
+    --brand-dark: #063b9c;
+    --bg: #f4f6fb;
+    --card: #ffffff;
+    --text: #1c2536;
+    --muted: #6b7385;
+    --good: #1a9c56;
+    --warn: #d98c00;
+    --bad: #d64545;
+    --border: #e3e7f0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--bg); color: var(--text);
+  }
+  header {
+    background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+    color: #fff; padding: 18px 24px; display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  }
+  header h1 { font-size: 18px; margin: 0; font-weight: 600; }
+  header p { margin: 2px 0 0; font-size: 12px; opacity: .85; }
+  .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  select, button {
+    font-size: 13px; padding: 6px 10px; border-radius: 6px; border: none;
+    background: #fff; color: var(--brand-dark); cursor: pointer;
+  }
+  button:hover { filter: brightness(0.96); }
+  main { padding: 20px; max-width: 1320px; margin: 0 auto; }
+  .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin-bottom: 18px; }
+  .kpi { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .kpi .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .kpi .value { font-size: 26px; font-weight: 700; margin-top: 4px; }
+  .works-overview { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:4px 0 18px; }
+  .works-unit-panel { background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px;min-width:0;box-shadow:0 3px 12px #16384d05; }
+  .works-unit-panel header { display:flex;justify-content:space-between;align-items:center;background:none;color:var(--text);padding:0 0 14px;border-bottom:1px solid var(--border); }
+  .works-unit-panel h3 { margin:0;font-size:17px;color:#123d50; }
+  .works-unit-badge { color:#006d87;background:#e3f3f7;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700; }
+  .works-unit-panel[data-unit="obra"] .works-unit-badge { color:#0b7246;background:#e4f7ec; }
+  .works-metrics { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px; }
+  .works-metric { background:#f5f9fb;border:1px solid #e1edf2;border-radius:10px;padding:12px 14px;min-width:0; }
+  .works-metric span { display:block;font-size:11px;color:#5d7080;text-transform:uppercase;letter-spacing:.035em; }
+  .works-metric strong { display:block;margin-top:5px;font-size:25px;line-height:1.15;font-variant-numeric:tabular-nums;color:#173e51; }
+  .works-metric small { font-size:12px;color:#637889;font-weight:600; }
+  .works-progress { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:16px; }
+  .works-progress-label { display:flex;justify-content:space-between;gap:6px;font-size:12px;color:#526b7b; }
+  .works-progress-label strong { color:#0b5d74;font-variant-numeric:tabular-nums; }
+  .works-progress-track { height:8px;background:#e6eff3;border-radius:999px;overflow:hidden;margin-top:7px; }
+  .works-progress-track i { display:block;height:100%;background:#0089a3;border-radius:999px; }
+  .works-unit-panel[data-unit="obra"] .works-progress-track i { background:#16a36b; }
+  .works-quality-note { margin:12px 0 0;font-size:12px;color:#9b5b13; }
+  @media(min-width:1450px){.works-overview:has(> :nth-child(3)){grid-template-columns:repeat(3,minmax(0,1fr));}}
+  @media(max-width:1150px){.works-overview{grid-template-columns:1fr;}}
+  @media(max-width:560px){.works-metrics,.works-progress{grid-template-columns:1fr 1fr;gap:8px;}.works-metric{padding:10px;}.works-metric strong{font-size:21px;}}
+  .grid { display: grid; grid-template-columns: minmax(0,1.2fr) minmax(0,1fr); gap: 16px; }
+  @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px; margin-bottom: 16px;
+  }
+  .card h2 { font-size: 14px; margin: 0 0 12px; color: var(--text); }
+  .bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 12px; }
+  .bar-row .name { width: 170px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
+  .ranking-name { width: 170px; flex-shrink: 0; min-width: 0; }
+  .ranking-name .primary { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
+  .ranking-name .meta { margin-top: 3px; font-size: 11px; color: var(--muted); white-space: normal; line-height: 1.25; }
+  .bar-track { min-width:0; flex: 1; background: #eef1f8; border-radius: 5px; height: 16px; position: relative; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 5px; background: var(--brand); }
+  .bar-score { width: 46px; text-align: right; font-weight: 600; flex-shrink: 0; }
+  .bar-class { width: 34px; text-align: center; flex-shrink: 0; }
+  #rankingChart { max-height: 640px; overflow-y: auto; padding-right: 4px; }
+  .bar-row-clickable { cursor: pointer; border-radius: 6px; padding: 2px 4px; margin: 0 -4px 8px; transition: background 0.12s; }
+  .bar-row-clickable:hover { background: #f1f5fb; }
+  .bar-row-clickable.active { background: #e8f0fe; box-shadow: inset 0 0 0 1px #0b5fff33; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th { color: var(--muted); font-weight: 600; position: sticky; top: 0; background: var(--card); }
+  .table-wrap { max-height: 360px; overflow: auto; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+  .badge.a { background: #e4f6ec; color: var(--good); }
+  .badge.b { background: #fff3e0; color: var(--warn); }
+  .badge.c, .badge.d { background: #fdeaea; color: var(--bad); }
+  .badge.default { background: #eef1f8; color: var(--muted); }
+  .pie-flex { display: flex; gap: 22px; align-items: center; flex-wrap: wrap; }
+  .pie-chart { width: 170px; height: 170px; min-width: 170px; border-radius: 50%; }
+  .pie-legend { list-style: none; padding: 0; margin: 0; font-size: 13px; }
+  .pie-legend li { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; }
+  .pie-legend .swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; flex: none; }
+  .empty { color: var(--muted); font-size: 13px; padding: 12px 0; }
+  .hint { color: var(--muted); font-size: 12px; margin: 0 0 12px; }
+  .export-bar {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding: 8px 20px; background: #eef3fb; border-bottom: 1px solid var(--border);
+  }
+  .export-bar select, .export-bar button { font-size: 12px; padding: 5px 8px; }
+  .export-bar button { background: var(--brand); color: #fff; font-weight: 600; }
+  .export-bar button:disabled { opacity: .6; cursor: wait; }
+  .public-saas-link { margin-left: auto; display: inline-flex; align-items: center; justify-content: center; padding: 8px 12px; border-radius: 8px; background: var(--brand); color: #fff; font-size: 12px; font-weight: 600; text-decoration: none; }
+  .public-saas-link:hover { filter: brightness(.96); }
+  .public-saas-link:focus-visible { outline: 2px solid var(--brand-dark); outline-offset: 3px; }
+  footer { text-align: center; color: var(--muted); font-size: 11px; padding: 18px; }
+  a { color: var(--brand); }
+  .tabs { display: flex; gap: 4px; padding: 0 20px; background: #fff; border-bottom: 1px solid var(--border); overflow-x: auto; }
+  .tab-btn {
+    background: transparent; border: none; border-bottom: 3px solid transparent; border-radius: 0;
+    padding: 12px 14px; font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap;
+  }
+  .tab-btn.active { color: var(--brand-dark); border-bottom-color: var(--brand); }
+  .tab-panel.hidden { display: none; }
+
+/* Navigation and layout share the live dashboard filters. */
+:root { --brand:#006d87; --brand-dark:#073d54; --bg:#f0f5f8; --border:#d7e4eb; }
+body {display:grid;grid-template-columns:245px minmax(0,1fr);grid-template-rows:auto auto 1fr auto;min-height:100vh;}
+header {grid-column:1/-1; padding:20px 26px;}
+header .controls select {max-width:330px;min-height:40px;}
+.export-bar {grid-column:2;flex-wrap:wrap;gap:8px;border-bottom:1px solid var(--border);padding:12px 24px;}
+#tabsNav {grid-column:1;grid-row:2/5;display:flex;flex-direction:column;align-items:stretch;gap:4px;background:#fff;padding:18px 12px;border-right:1px solid var(--border);overflow:auto;max-height:calc(100vh - 90px);position:sticky;top:0;}
+#tabsNav .tab-btn {white-space:normal;text-align:left;padding:11px 12px;border:0;border-radius:8px;color:#435869;line-height:1.4;}
+#tabsNav .tab-btn:hover {background:#eef7fa;}
+#tabsNav .tab-btn.active {color:#005a72;background:#e3f3f7;box-shadow:inset 3px 0 #007d98;font-weight:700;}
+.nav-heading {font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#647888;margin:18px 12px 8px;}
+#indicatorNav {display:flex;flex-direction:column;gap:3px;}
+main {grid-column:2;width:100%;min-width:0;max-width:1700px;padding:24px;}
+footer {grid-column:2;}
+.card {padding:20px;border-radius:14px;box-shadow:0 3px 12px #16384d05;min-width:0;}
+.card h2 {font-size:16px;line-height:1.5;}
+.kpi {border-radius:12px;border-top:3px solid #00829b;min-width:0;}
+.kpi .value {font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}
+.bar-row .name {white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;width:190px;}
+.bar-score {width:110px;font-variant-numeric:tabular-nums;}
+.table-wrap {max-height:560px;border:1px solid var(--border);border-radius:9px;}
+th,td {padding:10px 12px;} th {background:#edf5f9;z-index:1;} tbody tr:nth-child(even){background:#f8fbfd;} tbody tr:hover{background:#eef6fa;}
+#dashboardNotice {grid-column:1/-1;padding:12px 20px;background:#fff0ed;color:#923a2c;}
+#dashboardNotice:empty {display:none;}
+.page-context {margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;}
+.page-context h2 {margin:0;font-size:22px;color:#123d50;}
+.page-context p {margin:5px 0;color:#617587;font-size:13px;}
+.result-meta-card {display:grid;gap:4px;min-width:280px;padding:12px 14px;border:1px solid #d6e6ee;border-radius:12px;background:linear-gradient(135deg,#fff,#eef8fc);color:#17324d;box-shadow:0 3px 12px #16384d08;}
+.result-meta-card.hidden {display:none;}
+.result-meta-card .eyebrow {font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#5b7483;}
+.result-meta-card strong {font-size:14px;color:#0b5d74;}
+.result-meta-card small {color:#617587;}
+.result-meta-trigger {display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:8px 14px;border:1px solid #9fcce2;border-radius:11px;background:#fff;color:#075c78;font-size:12px;font-weight:800;box-shadow:none;}
+.result-meta-trigger:hover {background:#eaf6fb;}
+.dialog-backdrop {position:fixed;inset:0;z-index:10000;display:grid;place-items:start center;padding:4vh 16px;background:rgba(6,30,48,.55);overflow-y:auto;}
+.dialog-backdrop.hidden {display:none;}
+.dialog-card {width:min(860px,96vw);margin-bottom:4vh;padding:24px;border-radius:16px;background:#fff;box-shadow:0 24px 60px rgba(6,59,92,.32);}
+.dialog-card h3 {margin:0 0 6px;color:#0b3350;}
+.dialog-card p {margin:0 0 14px;color:#617587;font-size:13px;}
+.dialog-actions {display:flex;justify-content:flex-end;gap:10px;margin-top:18px;}
+@media(max-width:950px){body{display:block;}#tabsNav{position:static;max-height:290px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}.nav-heading,#indicatorNav{grid-column:1/-1;}#indicatorNav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}main{padding:14px;}header .controls{width:100%;}header .controls select{max-width:100%;flex:1;min-width:150px;}.bar-row .name{width:130px;}.bar-score{width:85px;}}
+
+
+.resizable-table {table-layout:fixed;width:max-content;min-width:100%;}
+.resizable-table th,.resizable-table td {white-space:normal;overflow-wrap:anywhere;}
+.resizable-table th {padding-right:18px;}
+.column-resizer {position:absolute;right:0;top:0;width:9px;height:100%;cursor:col-resize;touch-action:none;border-right:2px solid #b6ccd7;}
+.column-resizer:hover,.column-resizer:focus {background:#007d9840;outline:2px solid #007d98;}
+.nav-group {display:grid;gap:6px;margin-bottom:6px;}
+.nav-group-title {margin:6px 12px 0;font-size:12px;font-weight:800;color:#123d50;}
+.nav-sublist {display:grid;gap:4px;}
+.tab-btn-nested {padding-left:24px !important;font-weight:600;}
+.tab-btn-leaf {padding-left:34px !important;font-weight:500;}
+.tab-btn[data-screen], .tab-btn[data-indicator], .tab-btn[data-vehicle-type] {position:relative;}
+.tab-btn[data-screen]::before, .tab-btn[data-indicator]::before, .tab-btn[data-vehicle-type]::before {
+  content:""; position:absolute; left:14px; top:50%; width:6px; height:6px; border-radius:50%;
+  background:#b5c9d5; transform:translateY(-50%);
+}
+.tab-btn-nested::before {left:18px !important;}
+.tab-btn-leaf::before {left:26px !important;}
+.macro-summary-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:16px 0;}
+.macro-summary-panel {border:1px solid var(--border);border-radius:12px;padding:16px;background:#fbfdff;min-width:0;}
+.macro-summary-panel h3 {margin:0 0 6px;color:#123d50;font-size:15px;}
+.macro-summary-panel .hint {margin:0 0 12px;}
+.macro-summary-panel .bar-row {margin-bottom:12px;flex-wrap:wrap;}
+.macro-summary-panel .bar-score {width:58px;}
+.macro-point-scale {display:flex;justify-content:space-between;margin:12px 66px 10px 198px;font-size:11px;color:#526581;}
+.macro-summary-panel .bar-track {background:repeating-linear-gradient(to right,transparent 0,transparent calc(25% - 1px),#cad6e4 calc(25% - 1px),#cad6e4 25%),#edf2fa;}
+.macro-load-coverage {width:100%;padding-left:198px;box-sizing:border-box;font-size:11px;color:#526581;margin-top:3px;}
+.macro-summary-panel .bar-row.active {background:#e9f6fb;border-radius:8px;padding:4px 6px;margin:0 -6px 10px;}
+.comparison-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:14px 0 18px;}
+.comparison-column {border:1px solid var(--border);border-radius:12px;padding:16px;background:#fbfdff;min-width:0;}
+.comparison-column h3 {min-height:36px;margin:0 0 6px;color:#123d50;font-size:15px;}
+.comparison-column .hint {margin:0 0 12px;}
+.comparison-column .bar-row.active {background:#e9f6fb;border-radius:8px;padding:4px 6px;margin:0 -6px 10px;}
+.indicator-detail-block,.linked-screen-block {margin-top:18px;border-top:1px solid var(--border);padding-top:18px;}
+.linked-screen-toolbar {display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+.linked-screen-toolbar h3 {margin:0;color:#123d50;font-size:16px;}
+.linked-screen-toolbar .hint {margin:6px 0 0;}
+.linked-screen-open {display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 14px;border:1px solid #9fcce2;border-radius:10px;background:#fff;color:#075c78;font-size:12px;font-weight:800;text-decoration:none;}
+.linked-screen-open:hover {background:#eaf6fb;}
+.linked-screen-frame {width:100%;min-height:980px;border:1px solid var(--border);border-radius:14px;background:#fff;}
+.linked-screen-placeholder {padding:18px;border:1px dashed #c5d7e2;border-radius:12px;background:#f7fbfd;color:#4f6979;}
+@media(max-width:1200px){.macro-summary-grid{grid-template-columns:1fr;}}
+/* Empty placeholders must not reserve space above native screens. */
+.linked-screen-placeholder.hidden { display: none; }
+#linkedScreenTitle { display: none; }
+#tab-linked_screen .linked-screen-toolbar { align-items: center; margin-bottom: 8px; }
+#tab-linked_screen .linked-screen-toolbar .hint { margin: 0; }
+.page-context > div:first-child { flex: 1 1 300px; }
+.page-context .result-meta-card { min-width: 0; max-width: 580px; }
+.page-context .linked-screen-open[hidden] { display: none; }
+#tab-linked_screen .linked-screen-toolbar { display: none; }
+#tab-linked_screen { padding: 10px; }
+/* Shared dashboard content uses the available screen width. */
+main { max-width: none; margin: 0; box-sizing: border-box; }
+.linked-screen-frame { display: block; box-sizing: border-box; }
+.works-type-control {position:relative;flex:0 1 600px;width:600px;max-width:100%;min-width:0;}
+.works-type-control summary {cursor:pointer;padding:10px 12px;background:white;border:1px solid #b5ccda;border-radius:8px;margin-top:6px;}
+.works-type-options {position:absolute;z-index:10;box-sizing:border-box;width:100%;max-height:300px;overflow:auto;padding:10px;background:white;border:1px solid #b5ccda;border-radius:8px;box-shadow:0 6px 16px #0002;}
+.works-type-options label {display:flex;align-items:center;gap:8px;padding:7px;white-space:normal;}
+.works-type-options input {width:auto;min-width:0;}
+#regulatoryStatusFilter {position:relative;background:#fff;border:1px solid #c6dce9;border-radius:8px;min-height:40px;font-size:13px;flex-shrink:0;}
+#regulatoryStatusFilter summary {padding:11px 13px;cursor:pointer;}
+#regulatoryStatusFilter .works-type-options {position:absolute;top:100%;left:0;right:0;z-index:40;display:flex;flex-direction:column;gap:8px;background:#fff;color:#172535;border:1px solid #c6dce9;border-radius:8px;padding:12px;box-shadow:0 6px 18px #0002;}
+#regulatoryStatusFilter label {display:flex;gap:8px;align-items:flex-start;font-weight:normal;}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>RodoviaScan IA · Power BI direto do banco</h1>
+    <p>Dados lidos em tempo real do banco de dados do sistema. Atualiza automaticamente.</p>
+    <p id="demonstration-notice"><strong>Exemplo de demonstração. Resultados ilustrativos, sem validação oficial.</strong></p>
+  </div>
+  <div class="controls">
+    <select id="cycleSelect" aria-label="Ciclo"></select>
+    <label id="controllerGroupLabel">Grupo controlador <select id="controllerGroupSelect" aria-label="Grupo controlador"></select></label>
+    <select id="participantSelect" aria-label="Concessionária"></select>
+    <details id="regulatoryStatusFilter" class="works-type-filter" style="width:300px;color:#172535"><summary aria-label="Status Regulatório">Todos os status regulatórios</summary><div class="works-type-options"><label><input type="checkbox" data-all-regulatory checked> Todos os status regulatórios</label><label><input type="checkbox" data-regulatory value="normal"> Normal</label><label><input type="checkbox" data-regulatory value="em_repactuacao"> Em repactuação</label><label><input type="checkbox" data-regulatory value="repactuada_mesmo_controlador"> Repactuada mesmo controlador</label><label><input type="checkbox" data-regulatory value="repactuada_outro_controlador"> Repactuada outro controlador</label></div></details>
+    <label>Cenário <select id="scenarioSelect" aria-label="Cenário desejado"></select></label>
+    <button id="refreshBtn">Atualizar agora</button>
+  </div>
+</header>
+<div class="export-bar">
+  <span class="hint" style="margin:0;">Relatório da página atual:</span>
+  <select id="exportPageFormat">
+    <option value="xlsx">Excel (.xlsx)</option>
+    <option value="docx">Word (.docx)</option>
+    <option value="pdf">PDF</option>
+  </select>
+  <button id="exportPageBtn">Baixar página</button><span id="exportFeedback" role="status" aria-live="polite"></span>
+  <span class="hint" style="margin:0;">Relatório das telas carregadas:</span>
+  <select id="exportAllFormat">
+    <option value="xlsx">Excel (.xlsx)</option>
+    <option value="docx">Word (.docx)</option>
+    <option value="pdf">PDF</option>
+  </select>
+  <button id="exportAllBtn" title="Inclui as telas já carregadas nesta consulta">Baixar telas carregadas</button>
+
+</div>
+<nav class="tabs" id="tabsNav" aria-label="Relatórios RCR">
+  <div class="nav-heading">Painel</div>
+  <button class="tab-btn active" data-tab="visao_geral">Power BI direto do banco</button>
+
+  <div class="nav-heading" id="navConfigHeading">Configurações</div>
+  <div class="nav-group" id="navConfigGroup">
+    <div class="nav-group-title">Premissas de cálculo (somente consulta)</div>
+    <div class="nav-sublist">
+      <button class="tab-btn tab-btn-nested" data-tab="linked_screen" data-screen="configuracao_ciclo">Ciclo, corte e coleta</button>
+      <button class="tab-btn tab-btn-nested" data-tab="linked_screen" data-screen="configuracao_participantes">Concessionárias do ciclo</button>
+      <button class="tab-btn tab-btn-nested" data-tab="linked_screen" data-screen="lista_concessoes">Lista de concessões</button>
+      <button class="tab-btn tab-btn-nested" data-tab="linked_screen" data-screen="configuracao_fatores">Matriz comparativa de pesos</button>
+      <button class="tab-btn tab-btn-nested" data-tab="linked_screen" data-screen="consultoria_anexo_iv">Anexo IV RCR 04</button>
+      <button class="tab-btn tab-btn-nested" data-tab="linked_screen" data-screen="quadro_notas_resolucao">Quadro de notas da Resolução</button>
+      <button class="tab-btn tab-btn-nested" data-tab="linked_screen" data-screen="pesos_sucon_pavimento">Pesos SUCON · pavimento</button>
+      <button class="tab-btn tab-btn-nested" data-tab="linked_screen" data-screen="operacao_parametros">Operação - Parâmetros</button>
+      <button class="tab-btn tab-btn-nested" data-tab="linked_screen" data-screen="engenharia_parametros">Engenharia - Parâmetros</button>
+    </div>
+  </div>
+
+  <div class="nav-heading">Resultados</div>
+  <div class="nav-group">
+    <div class="nav-group-title">Macroindicador I</div>
+    <div class="nav-sublist">
+      <button class="tab-btn tab-btn-nested" data-tab="indicador_individual" data-indicator="pavimento_iri">IRI SH - Anexo IV</button>
+      <button class="tab-btn tab-btn-nested" data-tab="indicador_individual" data-indicator="pavimento_fwd">FWD SH - Anexo IV</button>
+      <button class="tab-btn tab-btn-nested" data-tab="indicador_individual" data-indicator="pavimento_flecha">Flecha SH - Anexo IV</button>
+      <button class="tab-btn tab-btn-nested" data-tab="indicador_individual" data-indicator="pavimento_ifi">IFI SH RCR 04</button>
+      <button class="tab-btn tab-btn-nested" data-tab="indicador_individual" data-indicator="pavimento_trinca">Trinca SH - Anexo IV</button>
+      <button class="tab-btn tab-btn-nested" data-tab="indicador_individual" data-indicator="sinalizacao_horizontal">Sinalização horizontal</button>
+      <button class="tab-btn tab-btn-nested" data-tab="indicador_individual" data-indicator="sinalizacao_vertical">Sinalização vertical</button>
+      <button class="tab-btn tab-btn-nested" data-tab="indicador_individual" data-indicator="oae">OAE - Manutenção física</button>
+      <button class="tab-btn tab-btn-nested" data-tab="indicador_individual" data-indicator="drenagem_superficial">Drenagem - Manutenção física</button>
+      <button class="tab-btn tab-btn-nested" data-tab="indicador_individual" data-indicator="ida">IDA</button>
+      <button class="tab-btn tab-btn-nested" data-tab="linked_screen" data-screen="ida_resultado">Resumo IDA</button>
+      <button class="tab-btn tab-btn-nested" data-tab="linked_screen" data-screen="mapa_levantamentos">Mapa geral dos levantamentos</button>
+    </div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-title">Macroindicador II</div>
+    <div class="nav-sublist">
+      <button class="tab-btn tab-btn-nested" data-tab="obras">Relação de obras</button>
+    </div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-title">Macroindicador III</div>
+    <div class="nav-sublist">
+      <button class="tab-btn tab-btn-nested" data-tab="consumidor_gov">Consumidor.Gov</button>
+      <button class="tab-btn tab-btn-nested" data-tab="consumidor_gov_raw">Dados brutos Consumidor.Gov</button>
+      <button class="tab-btn tab-btn-nested" data-tab="ambulancia_guincho" data-vehicle-type="ambulancia_c">Ambulância Tipo C</button>
+      <button class="tab-btn tab-btn-nested" data-tab="ambulancia_guincho" data-vehicle-type="ambulancia_d">Ambulância Tipo D</button>
+      <button class="tab-btn tab-btn-nested" data-tab="ambulancia_guincho" data-vehicle-type="guincho_leve">Guincho Leve</button>
+      <button class="tab-btn tab-btn-nested" data-tab="ambulancia_guincho" data-vehicle-type="guincho_pesado">Guincho Pesado</button>
+      <button class="tab-btn tab-btn-nested" data-tab="linked_screen" data-screen="mapa_ambulancia_c">Mapa Ambulância Tipo C</button>
+      <button class="tab-btn tab-btn-nested" data-tab="linked_screen" data-screen="mapa_ambulancia_d">Mapa Ambulância Tipo D</button>
+      <button class="tab-btn tab-btn-nested" data-tab="linked_screen" data-screen="mapa_guincho_leve">Mapa Guincho Leve</button>
+      <button class="tab-btn tab-btn-nested" data-tab="linked_screen" data-screen="mapa_guincho_pesado">Mapa Guincho Pesado</button>
+    </div>
+  </div>
+
+  <button class="tab-btn" data-tab="linked_screen" data-screen="classificacao_rcr">Resultados RCR 04</button>
+  <button class="tab-btn" data-tab="resumo1">Resultados Macroindicador RCR 04</button>
+  <button class="tab-btn" data-tab="linked_screen" data-screen="escopo_indicadores">Escopo obrigatório de indicadores</button>
+  <button class="tab-btn" data-tab="resumo1">Resumo 01 - Macroindicador</button>
+  <button class="tab-btn" data-tab="resumo2">Resumo 02 - Indicadores</button>
+  <button class="tab-btn" data-tab="resumo3">Resumo 03 - Detalhamento</button>
+  <button class="tab-btn" data-tab="linked_screen" data-screen="power_bi_cenarios">Power BI · cenários RCR</button>
+  <button class="tab-btn" data-tab="linked_screen" data-screen="validacao_power_bi">Validação Power BI</button>
+  <button class="tab-btn" data-tab="linked_screen" data-screen="publicacao_rcr">Publicação RCR</button>
+</nav>
+<main><div class="page-context"><div><h2 id="activePageTitle">Visão geral</h2><p id="activeScope">Selecione o ciclo e a concessionária.</p></div><div id="selectedResultMeta" class="result-meta-card hidden" aria-live="polite"></div></div><div id="dashboardNotice" role="alert"></div>
+  <section id="tab-visao_geral" class="tab-panel">
+  <div class="kpi-row" id="kpiRow"></div>
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h2>Ranking · RCR e indicadores</h2><label>Ordenar por <select id="rankingBasis" aria-label="Ordenar ranking por"><option value="rcr">RCR 04</option><option value="indicators">Indicadores</option></select></label><p class="hint">Azul: RCR 04 · Roxo: indicadores. Art. 104: trabalhos iniciais, sem classificação oficial. Demais notas sem classe: avaliação pendente.</p>
+        <div id="rankingChart"></div>
+      </div>
+      <div class="card">
+        <h2>Distribuição por classe (A/B/C/D)</h2>
+        <div id="classDistributionChart"></div>
+      </div>
+      <div class="card">
+        <h2>Concessionárias do ciclo selecionado</h2>
+        <div class="table-wrap">
+          <table id="participantsTable">
+            <thead><tr><th>Concessionária</th><th>Ano concessão</th><th>Fase</th><th>Status Regulatório</th><th>Classificação oficial</th><th>Elegibilidade</th><th>Cenário Power BI</th><th>Atualizado em</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <h2>Contribuição dos macrogrupos à nota dos indicadores</h2>
+        <div id="macroChart"></div>
+      </div>
+      <div class="card">
+        <h2 id="indicatorsTableTitle">Últimos indicadores calculados</h2>
+        <div class="table-wrap">
+          <table id="indicatorsTable">
+            <thead><tr><th>Concessionária</th><th>Macro</th><th>Indicador</th><th>Nível</th><th>Nota do indicador</th><th>Pontos ponderados</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  </section>
+
+  <section id="tab-resumo1" class="tab-panel hidden">
+    <div class="card">
+      <h2>Resumo 01 · Macroindicador — <span id="resumo1Subject">todas as concessionárias</span></h2>
+      <p class="hint">Comparativo das 35 concessionárias por macroindicador, mantendo a visão lado a lado dos três grupos oficiais da RCR 04. Quando houver uma concessionária selecionada no topo, ela permanece destacada nas barras.</p>
+      <div class="controls" style="margin-bottom:10px;">
+        <span>Ordenar comparativos:</span>
+        <button type="button" data-comparison-order="score" aria-pressed="true">Maior valor primeiro</button>
+        <button type="button" data-comparison-order="concessionaire" aria-pressed="false">Ordem da concessionária</button>
+      </div>
+      <div id="macroSummaryChart" class="macro-summary-grid"></div>
+      <div class="table-wrap">
+        <table id="macroSummaryTable">
+          <thead><tr><th>Concessionária</th><th>Macroindicador</th><th>Indicadores</th><th>Nota em pontos</th><th>Máximo oficial</th><th>% da nota máxima</th><th>Carregados / exigidos</th><th>Pendentes</th><th>Cobertura da carga</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-resumo2" class="tab-panel hidden">
+    <div class="card">
+      <h2>Resumo 02 · Indicadores — <span id="resumo2Subject">todas as concessionárias</span></h2>
+      <p class="hint">Linha auditável por indicador, espelhando o Resumo por indicador do módulo Classificação RCR. O filtro de macro ajuda a concentrar a leitura sem perder as colunas principais de resultado, nível, nota e situação.</p>
+      <div class="controls" style="margin-bottom:10px;">
+        <select id="macroFilterResumo2">
+          <option value="">Todos os macroindicadores</option>
+          <option value="conservacao_manutencao">I · Conservação, manutenção e IDA</option>
+          <option value="obras_obrigatorias">II · Obras obrigatórias</option>
+          <option value="atendimento_usuario">III · Atendimento ao usuário</option>
+        </select>
+      </div>
+      <div class="table-wrap" style="max-height:520px;">
+        <table id="resumo2Table">
+          <thead><tr><th>Concessionária</th><th>Macro</th><th>Indicador</th><th>Resultado apurado</th><th>Unidade</th><th>Nível</th><th>Nota do nível</th><th>Pontos obtidos</th><th>Máx. pontos</th><th>Fonte do cálculo</th><th>Situação</th><th>Atualizado</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-resumo3" class="tab-panel hidden">
+    <div class="card">
+      <h2>Resumo 03 · Detalhamento (subindicadores) — <span id="resumo3Subject">todas as concessionárias</span></h2>
+      <p class="hint">Detalhamento completo: valor bruto, unidade, fonte e status de cada indicador/subindicador calculado.</p>
+      <h3 style="margin-top:0;">Distribuição por status</h3>
+      <div id="resumo3StatusChart"></div>
+      <div class="table-wrap" style="max-height:560px; margin-top:14px;">
+        <table id="resumo3Table" data-report-table-kind="detail">
+          <thead><tr><th>Concessionária</th><th>Macro</th><th>Indicador/Subindicador</th><th>Valor bruto</th><th>Unidade</th><th>Nível</th><th>Score</th><th>Fonte</th><th>Status</th><th>Atualizado</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-indicador_individual" class="tab-panel hidden">
+    <div class="card">
+      <h2>Indicador individual</h2>
+      <p class="hint">Comparativo entre concessionárias do ciclo para o indicador selecionado. Use a ordenação por concessionária para alinhar as linhas de todos os gráficos. Para grupos compostos (ex.: Sinalização vertical e Drenagem), o painel apresenta as comparações lado a lado e, quando houver uma concessionária selecionada, incorpora abaixo a tela nativa correspondente do módulo Classificação RCR.</p>
+      <div class="controls" style="margin-bottom:10px;">
+        <select id="indicatorSelect" hidden aria-hidden="true" tabindex="-1"></select>
+        <span>Ordenar comparativos:</span>
+        <button type="button" data-comparison-order="score" aria-pressed="true">Maior valor primeiro</button>
+        <button type="button" data-comparison-order="concessionaire" aria-pressed="false">Por concessionária</button>
+      </div>
+      <div id="indicatorComparisonGrid" class="comparison-grid"></div>
+      <div id="indicatorRankingChart"></div>
+      <div class="table-wrap" style="max-height:420px; margin-top:12px;">
+        <table id="indicatorRankingTable">
+          <thead><tr><th>Concessionária</th><th>Valor bruto</th><th>Unidade</th><th>Nível</th><th>Score ponderado</th><th>Fonte</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div id="indicatorNativeDetail" class="indicator-detail-block hidden">
+        <div class="linked-screen-toolbar">
+          <div>
+            <h3 id="indicatorNativeDetailTitle">Tela nativa vinculada</h3>
+            <p id="indicatorNativeDetailHint" class="hint">A mesma renderização do módulo Classificação RCR é incorporada aqui para manter a leitura comparativa do Power BI e o detalhamento auditável no mesmo fluxo.</p>
+          </div>
+          <a id="indicatorNativeDetailOpen" class="linked-screen-open" target="_blank" rel="noopener">Abrir tela nativa</a>
+        </div>
+        <div id="indicatorNativeDetailPlaceholder" class="linked-screen-placeholder hidden"></div>
+        <iframe id="indicatorNativeDetailFrame" class="linked-screen-frame" title="Detalhamento nativo do indicador"></iframe>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-consumidor_gov" class="tab-panel hidden">
+    <div class="card">
+      <h2>Consumidor.Gov — <span id="consumerSummarySubject">todas as concessionárias</span></h2>
+      <p class="hint">Filtro aplicado: ano-concessão de cada concessionária, pela data de finalização. As datas de cada janela estão na tabela; o início é incluído e o fim é excluído. Nível e nota seguem as regras vigentes do sistema para cada componente; não representam a nota ponderada final.</p>
+      <div class="table-wrap" style="max-height:520px;">
+        <table id="consumerSummaryTable">
+          <thead><tr><th>Concessionária</th><th>Nome no Consumidor.gov</th><th>Memória de cálculo</th><th>Filtro aplicado</th><th>Início (inclusive)</th><th>Fim (exclusive)</th><th>Reclamações finalizadas</th><th>Índice de solução</th><th>Nível</th><th>Nota</th><th>Índice de satisfação</th><th>Nível</th><th>Nota</th><th>Índice de resposta</th><th>Nível</th><th>Nota</th><th>Prazo médio (dias)</th><th>Nível</th><th>Nota</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-consumidor_gov_raw" class="tab-panel hidden">
+    <div class="card">
+      <h2>Dados brutos Consumidor.Gov — <span id="consumerRawSubject">todas as concessionárias</span></h2>
+      <p class="hint">Registro a registro (protocolo, status, avaliação, prazos), igual à tela "Dados brutos Consumidor.Gov" do sistema. Use o seletor de concessionária no topo para filtrar; exibe até 200 por página.</p>
+      <div class="controls" style="margin-bottom:10px;">
+        <span id="consumerRawCount" class="hint"></span>
+        <button id="consumerRawPrev">&larr; Anterior</button>
+        <button id="consumerRawNext">Próxima &rarr;</button>
+      </div>
+      <div class="table-wrap" style="max-height:560px;">
+        <table id="consumerRawTable" data-report-table-kind="detail">
+          <thead><tr><th>Concessionária</th><th>Protocolo</th><th>Status</th><th>Avaliação</th><th>Nota</th><th>Área</th><th>Assunto</th><th>Grupo de problema</th><th>Finalizada em</th><th>Prazo (dias)</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-obras" class="tab-panel hidden">
+    <div class="card">
+      <h2>Relação de obras — resultados executivos</h2>
+      <p class="hint">Quantidade física por grupo de obra, filtrada pelo ciclo e concessionária selecionados. Fonte: pastas específicas de obras e ANTT, persistida no banco.</p>
+      <p class="hint" id="worksDataQuality" hidden></p>
+      <div class="controls" style="margin-bottom:10px;"><div class="works-type-control">Tipo de obra<details id="worksTypeFilter"><summary>Todos os tipos de obra</summary><div class="works-type-options" role="group" aria-label="Tipo de obra"></div></details></div></div>
+      <div class="works-overview" id="worksKpis"></div>
+      <div class="grid">
+        <div class="card"><h2>Total previsto acumulado</h2><div id="worksChartPlannedAccumulated"></div></div>
+        <div class="card"><h2>Total realizado acumulado</h2><div id="worksChartExecutedAccumulated"></div></div>
+        <div class="card"><h2>Quantidade prevista anual</h2><div id="worksChartPlannedYear"></div></div>
+        <div class="card"><h2>Quantidade realizada anual</h2><div id="worksChartExecutedYear"></div></div>
+      </div>
+      <div class="table-wrap" style="max-height:520px;"><table id="worksTable" data-report-table-kind="detail"><thead><tr><th>Concessionária</th><th>Grupo</th><th>Descrição</th><th>Unidade</th><th>Previsto acumulado</th><th>Realizado acumulado</th><th>% acumulado</th><th>Previsto anual</th><th>Realizado anual</th><th>% anual</th><th>Qualidade</th><th>Fonte</th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </section>
+
+  <section id="tab-ambulancia_guincho" class="tab-panel hidden">
+    <div class="card">
+      <h2>Ambulância / Guincho — <span id="operationalVehicleSubject">todas as concessionárias</span></h2>
+      <p class="hint">Espelha as telas "Ambulância Tipo C/D" e "Guincho Leve/Pesado" do sistema: resumo ANUAL por veículo e detalhamento MENSAL, lidos do resultado já calculado (sem consultar os eventos operacionais brutos, que somam ~20 milhões de linhas e são inviáveis de listar aqui).</p>
+      <div class="table-wrap" style="max-height:280px;">
+        <table id="operationalVehicleSummaryTable">
+          <thead><tr><th>Concessionária</th><th>Veículo</th><th>% anual</th><th>Nível</th><th>Meses válidos</th><th>Cobertura</th><th>Parâmetro (PER)</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <h2 style="margin-top:18px;">Distribuição por status do parâmetro (PER)</h2>
+      <div id="operationalStatusChart"></div>
+      <h2 style="margin-top:18px;">Detalhamento por mês</h2>
+      <div class="controls" style="margin-bottom:10px;">
+        <select id="operationalVehicleFilter">
+          <option value="">Todos os veículos</option>
+          <option value="ambulancia_c">Ambulância tipo C</option>
+          <option value="ambulancia_d">Ambulância tipo D</option>
+          <option value="guincho_leve">Guincho leve</option>
+          <option value="guincho_pesado">Guincho pesado</option>
+        </select>
+      </div>
+      <div class="table-wrap" style="max-height:420px;">
+        <table id="operationalVehicleMonthlyTable">
+          <thead><tr><th>Concessionária</th><th>Veículo</th><th>Mês</th><th>Ocorrências elegíveis</th><th>Atendidas no prazo</th><th>% no prazo</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-linked_screen" class="tab-panel hidden">
+    <div class="card">
+      <div class="linked-screen-toolbar">
+        <div>
+          <h2 id="linkedScreenTitle">Tela nativa do módulo Classificação RCR</h2>
+          <p id="linkedScreenDescription" class="hint">Esta área reaproveita diretamente a tela equivalente do sistema para manter a mesma lógica, os mesmos gráficos e a mesma tabela auditável já usados na Classificação RCR.</p>
+        </div>
+        <a id="linkedScreenOpen" class="linked-screen-open" target="_blank" rel="noopener">Abrir em nova aba</a>
+      </div>
+      <div id="linkedScreenPlaceholder" class="linked-screen-placeholder hidden"></div>
+      <iframe id="linkedScreenFrame" class="linked-screen-frame" title="Tela nativa da Classificação RCR"></iframe>
+    </div>
+  </section>
+</main>
+<div id="resultMetaModal" class="dialog-backdrop hidden" role="dialog" aria-modal="true" aria-label="Atualização do resultado por concessionária">
+  <div class="dialog-card">
+    <h3>Atualização do resultado por concessionária</h3>
+    <p>Cenário selecionado e data/hora da fotografia registrada no banco para cada concessionária exibida no filtro atual.</p>
+    <div class="table-wrap" style="max-height:60vh;">
+      <table>
+        <thead><tr><th>Concessionária</th><th>Data/hora de atualização</th><th>Cenário</th></tr></thead>
+        <tbody id="resultMetaTableBody"></tbody>
+      </table>
+    </div>
+    <div class="dialog-actions">
+      <button type="button" id="resultMetaCloseBtn">Fechar</button>
+    </div>
+  </div>
+</div>
+<footer>
+  RodoviaScan IA · Fonte: banco de dados do sistema (endpoints <code>/power-bi-direct/data/*</code>).
+  Para conectar via Power BI Desktop: Obter dados &rarr; Web &rarr; use a URL do endpoint desejado.
+</footer>
+<script type="application/json" id="powerBiContext">{"mode": "public", "publicationId": "demonstracao_rcr", "cycleId": 1}</script>
+<script src="base-publica.js"></script>
+<script>
+const DASHBOARD_CONTEXT = JSON.parse(document.getElementById("powerBiContext").textContent);
+const PUBLIC_DASHBOARD = DASHBOARD_CONTEXT.mode === "public";
+
+const PUBLIC_LIVE = PUBLIC_DASHBOARD && DASHBOARD_CONTEXT.live === true;
+const archiveBase = new URL('dados_desenvolvimento_c/', location.href);
+const archiveCatalog = RcrArchive.readJson(new URL("catalogo_24_cenarios.json", archiveBase));
+const archiveLookup = archiveCatalog.then(catalog => RcrArchive.createArchive(archiveBase, catalog));
+async function queryArchive(path) {
+  return (await archiveLookup)(path, selectedScenarioNumber());
+}
+async function fetchConsumerArchive(url) {
+  const route = new URL(url, location.href);
+  return Response.json(await queryArchive('/consumer-raw' + route.search));
+}
+// Mantém as consultas no mesmo prefixo usado para abrir o painel. No Dev,
+// /api aponta para a 8014; caminhos absolutos sem /api podiam consultar 8010.
+const DASHBOARD_PREFIX = location.pathname.replace(/\/power-bi-direct\/(?:public\/[A-Za-z0-9_-]+\/)?dashboard\/?$/, "");
+function updatePublicEnvironmentLink() {
+  const query = new URLSearchParams({cycle_id: document.getElementById('cycleSelect').value || new URLSearchParams(location.search).get('cycle_id') || '1', tab:'visao_geral'});
+  document.querySelectorAll('.public-saas-link').forEach(link => { link.href = `${DASHBOARD_PREFIX}/power-bi-direct/public/painel/dashboard?${query}`; });
+}
+updatePublicEnvironmentLink();
+const API_BASE = PUBLIC_DASHBOARD
+  ? `${DASHBOARD_PREFIX}/power-bi-direct/public/${encodeURIComponent(DASHBOARD_CONTEXT.publicationId)}/data`
+  : `${DASHBOARD_PREFIX}/power-bi-direct/data`;
+const POWER_BI_SELECTION_EVENT = "rodoviascan-power-bi-selection";
+function frontendApplicationBase() {
+  const frontend = new URL(location.href);
+  // Direct API links use the matching local frontend. Reverse-proxy /api
+  // links preserve their existing frontend origin and application subpath.
+  const localPorts = { "8010": "5173", "8012": "5174", "8014": "5175" };
+  const localHost = ["localhost", "127.0.0.1", "[::1]"].includes(frontend.hostname);
+  if (localHost && localPorts[frontend.port] && !DASHBOARD_PREFIX.endsWith("/api")) {
+    frontend.port = localPorts[frontend.port];
+  }
+  return `${frontend.origin}${DASHBOARD_PREFIX.replace(/\/api$/, "")}/${PUBLIC_DASHBOARD ? "public-power-bi-native.html" : "#/classificacao-rcr"}`;
+}
+const FRONTEND_APP_BASE = new URL('public-power-bi-native.html', location.href).href;
+const archiveScreens = new Set(["configuracao_ciclo", "configuracao_participantes", "lista_concessoes", "configuracao_fatores", "consultoria_anexo_iv", "quadro_notas_resolucao", "pesos_sucon_pavimento", "operacao_parametros", "engenharia_parametros", "classificacao_rcr", "escopo_indicadores", "power_bi_cenarios", "publicacao_rcr", "ida_resultado", "pavimento_iri", "pavimento_fwd", "pavimento_flecha", "pavimento_ifi", "pavimento_trinca", "sinalizacao_horizontal", "sinalizacao_vertical", "drenagem", "oae", "ida"]);
+
+function updateArchiveNavigation() {
+  const available = selectedScenarioNumber() === 24 && !document.getElementById('participantSelect').value
+    && !selectedRegulatoryStatuses().length && !selectedControllerGroup();
+  document.querySelectorAll('#tabsNav [data-tab="linked_screen"]').forEach(button => {
+    button.hidden = !available || !archiveScreens.has(button.dataset.screen);
+  });
+}
+
+const nativeStyle = document.createElement('style');
+nativeStyle.textContent = '#tabsNav button[hidden], #indicatorNativeDetail { display: none !important; }';
+document.head.append(nativeStyle);
+const LINKED_SCREEN_CONFIG = {
+  configuracao_ciclo: { title: "Ciclo, corte e coleta", description: "Ciclo avaliado, data de corte e regra de coleta (consulta).", requireParticipant: false, consulta: true },
+  configuracao_participantes: { title: "Concessionárias do ciclo", description: "Concessionárias que entram no ciclo (consulta).", requireParticipant: false, consulta: true },
+  lista_concessoes: { title: "Lista de concessões", description: "Cadastro contratual das concessões (consulta).", requireParticipant: false, consulta: true },
+  configuracao_fatores: { title: "Matriz comparativa de pesos", description: "Pesos e fatores aplicados ao cálculo (consulta).", requireParticipant: false, consulta: true },
+  consultoria_anexo_iv: { title: "Anexo IV RCR 04", description: "Critérios, níveis, notas e condições por indicador e fonte (consulta).", requireParticipant: false, consulta: true },
+  quadro_notas_resolucao: { title: "Quadro de notas da Resolução", description: "Faixas de nota global e classes (consulta).", requireParticipant: false, consulta: true },
+  pesos_sucon_pavimento: { title: "Pesos SUCON · pavimento", description: "Pesos dos indicadores de pavimento (consulta).", requireParticipant: false, consulta: true },
+  operacao_parametros: { title: "Operação - Parâmetros", description: "Parâmetros operacionais do contrato (consulta).", requireParticipant: false, consulta: true },
+  engenharia_parametros: { title: "Engenharia - Parâmetros", description: "Parâmetros de engenharia por contrato (consulta).", requireParticipant: false, consulta: true },
+  classificacao_rcr: { title: "Resultados RCR 04", description: "Tela nativa de classificação consolidada por concessionária.", requireParticipant: false },
+  escopo_indicadores: { title: "Escopo obrigatório de indicadores", description: "Escopo e obrigatoriedade refletidos diretamente do módulo Classificação RCR.", requireParticipant: true },
+  resumo_classificacao: { title: "Resumo 01 - Macroindicador", description: "Resumo nativo por macroindicador do módulo Classificação RCR.", requireParticipant: true },
+  resumo_indicadores_rcr: { title: "Resumo 02 - Indicadores", description: "Resumo nativo por indicador do módulo Classificação RCR.", requireParticipant: true },
+  detalhamento_rcr: { title: "Resumo 03 - Detalhamento", description: "Detalhamento nativo de memória de cálculo por indicador.", requireParticipant: true },
+  power_bi_cenarios: { title: "Power BI · cenários RCR", description: "Comparação de fotografias registradas por cenário no fluxo oficial.", requireParticipant: false },
+  validacao_power_bi: { title: "Validação Power BI", description: "Conferência concessionária a concessionária entre cálculo nativo e referência validada.", requireParticipant: false },
+  publicacao_rcr: { title: "Publicação RCR", description: "Prévia oficial da relação publicada pela Classificação RCR.", requireParticipant: false },
+  mapa_levantamentos: { title: "Mapa geral dos levantamentos", description: "Mapa e tabela dos informes de manutenção, com filtros por região, monitorador, concessionária e disciplina.", requireParticipant: false },
+  ida_resultado: { title: "Resumo IDA", description: "Tela nativa de resultado consolidado do IDA.", requireParticipant: false },
+  mapa_ambulancia_c: { title: "Mapa Ambulância Tipo C", description: "Mapa geográfico nativo das ocorrências válidas de ambulância tipo C.", requireParticipant: false },
+  mapa_ambulancia_d: { title: "Mapa Ambulância Tipo D", description: "Mapa geográfico nativo das ocorrências válidas de ambulância tipo D.", requireParticipant: false },
+  mapa_guincho_leve: { title: "Mapa Guincho Leve", description: "Mapa geográfico nativo das ocorrências válidas de guincho leve.", requireParticipant: false },
+  mapa_guincho_pesado: { title: "Mapa Guincho Pesado", description: "Mapa geográfico nativo das ocorrências válidas de guincho pesado.", requireParticipant: false },
+  pavimento_iri: { title: "IRI SH - Anexo IV", description: "Tabela detalhada por trecho/km reaproveitada diretamente da tela nativa de pavimento IRI.", requireParticipant: true },
+  pavimento_fwd: { title: "FWD SH - Anexo IV", description: "Tabela detalhada por trecho/km reaproveitada diretamente da tela nativa de pavimento FWD.", requireParticipant: true },
+  pavimento_flecha: { title: "Flecha SH - Anexo IV", description: "Tabela detalhada por trecho/km reaproveitada diretamente da tela nativa de pavimento Flecha.", requireParticipant: true },
+  pavimento_ifi: { title: "IFI SH RCR 04", description: "Tabela detalhada por trecho/km reaproveitada diretamente da tela nativa de pavimento IFI.", requireParticipant: true },
+  pavimento_trinca: { title: "Trinca SH - Anexo IV", description: "Tabela detalhada por trecho/km reaproveitada diretamente da tela nativa de pavimento Trinca.", requireParticipant: true },
+  sinalizacao_horizontal: { title: "Sinalização horizontal", description: "Tela nativa com a tabela detalhada e os critérios de Sinalização horizontal.", requireParticipant: true },
+  sinalizacao_vertical: { title: "Sinalização vertical", description: "Tela nativa com os três componentes e a tabela detalhada de Sinalização vertical.", requireParticipant: true },
+  drenagem: { title: "Drenagem - Manutenção física", description: "Tela nativa reunindo drenagem superficial e profunda.", requireParticipant: true },
+  oae: { title: "OAE - Manutenção física", description: "Tela nativa com a tabela detalhada de OAE.", requireParticipant: true },
+  ida: { title: "IDA", description: "Tela nativa com o resultado e o detalhamento do IDA.", requireParticipant: true },
+};
+const INDICATOR_GROUPS = {
+  sinalizacao_vertical: {
+    menuKey: "sinalizacao_vertical",
+    screenKey: "sinalizacao_vertical",
+    title: "Sinalização vertical",
+    keys: ["sinalizacao_vertical", "sinalizacao_chapa", "sinalizacao_suporte"],
+  },
+  drenagem_superficial: {
+    menuKey: "drenagem_superficial",
+    screenKey: "drenagem",
+    title: "Drenagem - Manutenção física",
+    keys: ["drenagem_superficial", "drenagem_profunda"],
+  },
+  drenagem_profunda: {
+    menuKey: "drenagem_superficial",
+    screenKey: "drenagem",
+    title: "Drenagem - Manutenção física",
+    keys: ["drenagem_superficial", "drenagem_profunda"],
+  },
+  sinalizacao_chapa: {
+    menuKey: "sinalizacao_vertical",
+    screenKey: "sinalizacao_vertical",
+    title: "Sinalização vertical",
+    keys: ["sinalizacao_vertical", "sinalizacao_chapa", "sinalizacao_suporte"],
+  },
+  sinalizacao_suporte: {
+    menuKey: "sinalizacao_vertical",
+    screenKey: "sinalizacao_vertical",
+    title: "Sinalização vertical",
+    keys: ["sinalizacao_vertical", "sinalizacao_chapa", "sinalizacao_suporte"],
+  },
+};
+const INDICATOR_SCREEN_MAP = {
+  pavimento_iri: "pavimento_iri",
+  pavimento_fwd: "pavimento_fwd",
+  pavimento_flecha: "pavimento_flecha",
+  pavimento_ifi: "pavimento_ifi",
+  pavimento_trinca: "pavimento_trinca",
+  sinalizacao_horizontal: "sinalizacao_horizontal",
+  sinalizacao_vertical: "sinalizacao_vertical",
+  sinalizacao_chapa: "sinalizacao_vertical",
+  sinalizacao_suporte: "sinalizacao_vertical",
+  drenagem_superficial: "drenagem",
+  drenagem_profunda: "drenagem",
+  oae: "oae",
+  ida: "ida",
+};
+let activeLinkedScreenKey = "";
+let activeVehicleType = "";
+
+function privateDashboardAuthHeaders(targetUrl) {
+  if (PUBLIC_DASHBOARD) return {};
+  // A sessão é lida a cada consulta, incluindo renovação ou saída do usuário.
+  try {
+    if (new URL(targetUrl, window.location.href).origin !== window.location.origin) return {};
+    const session = JSON.parse(window.localStorage.getItem("rodoviascan_auth_session") || "null");
+    const user = session?.user || session?.currentUser || session?.session || session || {};
+    const nested = typeof session?.session === "object" ? session.session : {};
+    const token = session?.token || session?.access_token || session?.accessToken || nested?.token || nested?.access_token || nested?.accessToken || user?.token || user?.access_token || user?.accessToken;
+    if (typeof token !== "string" || !token || /[\r\n]/.test(token)) return {};
+    return { Authorization: `Bearer ${token}` };
+  } catch { return {}; }
+}
+
+function selectedRegulatoryStatuses() {return [...document.querySelectorAll('#regulatoryStatusFilter input[data-regulatory]:checked')].map(input => input.value);}
+function regulatoryStatusQuery() {const params = new URLSearchParams();selectedRegulatoryStatuses().forEach(value => params.append('regulatory_status', value));return params.toString();}
+function updateRegulatoryStatusSummary() {
+ const inputs=[...document.querySelectorAll('#regulatoryStatusFilter input[data-regulatory]:checked')];
+ document.querySelector('#regulatoryStatusFilter input[data-all-regulatory]').checked=!inputs.length;
+ document.querySelector('#regulatoryStatusFilter summary').textContent=inputs.length===1?inputs[0].parentElement.textContent.trim():inputs.length?`${inputs.length} status regulatórios`:'Todos os status regulatórios';
+}
+function selectedControllerGroup() {return document.getElementById('controllerGroupSelect')?.value || '';}
+async function loadControllerGroups() {
+  const select=document.getElementById('controllerGroupSelect');
+  const params=new URLSearchParams(location.search);
+  const selected=params.has('controller_group') ? params.get('controller_group') : select.value || (!PUBLIC_DASHBOARD ? sessionStorage.getItem('rodoviascan.controller-group') : '') || '';
+  const options=await fetchJson(`/controller-groups?cycle_id=${document.getElementById('cycleSelect').value}`);
+  select.innerHTML='<option value="">Todos os grupos</option>'+options.map(row=>`<option value="${escapeHtml(row.value)}">${escapeHtml(row.value)} (${row.count})</option>`).join('');
+  select.value=options.some(row=>row.value===selected)?selected:'';
+  sessionStorage.setItem('rodoviascan.controller-group',select.value);
+}
+function selectedScenarioNumber() { return Number(document.getElementById('scenarioSelect').value || 24); }
+async function loadScenarioSelect() {
+  const select=document.getElementById('scenarioSelect');
+  if (PUBLIC_DASHBOARD && !PUBLIC_LIVE) {
+    const catalog = await archiveCatalog;
+    const scenarios = Object.keys(catalog.scenarios).sort((a,b) => Number(a) - Number(b));
+    const wanted = new URLSearchParams(location.search).get('scenario_number') || select.value;
+    select.replaceChildren(...scenarios.map(value => new Option('Cenário ' + value, value)));
+    select.value = scenarios.includes(wanted) ? wanted : '24';
+    select.parentElement.hidden = scenarios.length < 2;
+    return;
+  }
+  const number=Number(new URLSearchParams(location.search).get('scenario_number') || select.value || 24);
+  const rows=await fetchJson(`/scenarios?cycle_id=${document.getElementById('cycleSelect').value}`);
+  const byNumber=new Map();
+  rows.forEach(row=>{const match=String(row.scenario_name||'').match(/^Cen[áa]rio\s+(\d+)/);if(match)byNumber.set(Number(match[1]),row);});
+  select.innerHTML=[...byNumber].sort((a,b)=>a[0]-b[0]).map(([n,row])=>`<option value="${n}">${escapeHtml(row.scenario_name)}</option>`).join('');
+  if(byNumber.has(number))select.value=String(number);
+  else { select.value='';throw new Error(`Cenário ${number} não disponível neste ciclo.`); }
+}
+async function fetchJson(path) {
+  if (!/^\/(cycles|scenarios|controller-groups)(?:\?|$)/.test(path) && regulatoryStatusQuery()) path += (path.includes('?')?'&':'?') + regulatoryStatusQuery();
+  if(selectedControllerGroup() && !/^\/(cycles|controller-groups)(?:\?|$)/.test(path))path += (path.includes('?')?'&':'?')+`controller_group=${encodeURIComponent(selectedControllerGroup())}`;
+  if ((!PUBLIC_DASHBOARD || PUBLIC_LIVE) && !/^\/(cycles|scenarios)(?:\?|$)/.test(path)) path += (path.includes('?') ? '&' : '?') + `scenario_number=${selectedScenarioNumber()}`;
+
+  return (await queryArchive(path)).value;
+}
+
+function badgeClass(classification) {
+  const c = String(classification || "").trim().toUpperCase();
+  if (c.startsWith("A")) return "a";
+  if (c.startsWith("B")) return "b";
+  if (c.startsWith("C") || c.startsWith("D")) return "c";
+  return "default";
+}
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (ch) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  }[ch]));
+}
+
+function formatDateTime(value) {
+  if (!value) return "—";
+  const normalized = String(value).replace(" ", "T");
+  const date = new Date(normalized);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return new Intl.DateTimeFormat("pt-BR", {
+    dateStyle: "short",
+    timeStyle: "medium",
+  }).format(date);
+}
+
+function scenarioLabel(row) {
+  const normalizedName = String(row?.selected_scenario_name || "").trim();
+  const scenarioId = Number(row?.selected_scenario_id);
+  if (Number.isFinite(scenarioId) && normalizedName) return `#${scenarioId}  ${normalizedName}`;
+  if (Number.isFinite(scenarioId)) return `#${scenarioId}`;
+  if (row?.source === "publicacao_rcr") return "Publicação RCR";
+  return normalizedName || "—";
+}
+
+function resultUpdatedAtSortValue(value) {
+  if (!value) return Number.NEGATIVE_INFINITY;
+  const parsed = new Date(String(value).replace(" ", "T"));
+  return Number.isNaN(parsed.getTime()) ? Number.NEGATIVE_INFINITY : parsed.getTime();
+}
+
+function scenarioMeta(row) {
+  const label = scenarioLabel(row);
+  const updatedAt = formatDateTime(row?.selected_scenario_updated_at);
+  return {
+    label,
+    updatedAt,
+    detail: label,
+  };
+}
+
+function indicatorGroupConfig(indicatorKey) {
+  return INDICATOR_GROUPS[indicatorKey] || {
+    menuKey: indicatorKey,
+    screenKey: INDICATOR_SCREEN_MAP[indicatorKey] || "",
+    title: indicatorCatalogItems.find((item) => item.indicator_key === indicatorKey)?.indicator_name || indicatorKey,
+    keys: [indicatorKey],
+  };
+}
+
+function canonicalIndicatorMenuKey(indicatorKey) {
+  return indicatorGroupConfig(indicatorKey || "").menuKey || indicatorKey || "";
+}
+
+function buildFrontendUrl(screenKey, participantRequired = false, embed = false) {
+  const params = new URLSearchParams({ screen: screenKey });
+  if (PUBLIC_DASHBOARD) params.set("publication", DASHBOARD_CONTEXT.publicationId);
+  if (PUBLIC_DASHBOARD) params.set("frontend_revision", "public-api-R136");
+  const cycleId = document.getElementById("cycleSelect")?.value || "";
+  const participantId = document.getElementById("participantSelect")?.value || "";
+  if (cycleId) params.set("cycle_id", cycleId);
+  if (participantId) params.set("participant_id", participantId);
+  else if (participantRequired) params.delete("participant_id");
+  if (!PUBLIC_DASHBOARD || PUBLIC_LIVE) params.set("scenario_number", String(selectedScenarioNumber()));
+  if (!PUBLIC_DASHBOARD || PUBLIC_LIVE) params.set("controller_group",selectedControllerGroup());
+  selectedRegulatoryStatuses().forEach(value => params.append('regulatory_status',value));
+  if (embed) params.set("embed", "1");
+  if (LINKED_SCREEN_CONFIG[screenKey]?.consulta) params.set("consulta", "1");
+  return `${FRONTEND_APP_BASE}?${params.toString()}`;
+}
+
+function navButtonMatches(btn, { tabKey, indicatorKey = "", screenKey = "", vehicleType = "" }) {
+  if (!btn || btn.dataset.tab !== tabKey) return false;
+  if (btn.dataset.screen && (btn.dataset.screen || "") !== (screenKey || "")) return false;
+  if (btn.dataset.vehicleType && (btn.dataset.vehicleType || "") !== (vehicleType || "")) return false;
+  if (btn.dataset.indicator) return canonicalIndicatorMenuKey(btn.dataset.indicator) === canonicalIndicatorMenuKey(indicatorKey);
+  return true;
+}
+
+function highlightActiveTab(tabKey, indicatorKey = "", screenKey = "", vehicleType = "") {
+  document.querySelectorAll(".tab-btn").forEach((btn) => {
+    btn.classList.toggle("active", navButtonMatches(btn, { tabKey, indicatorKey, screenKey, vehicleType }));
+  });
+}
+
+function renderLinkedScreen(target, screenKey) {
+  const config = LINKED_SCREEN_CONFIG[screenKey] || { title: screenKey, description: "Tela nativa vinculada ao módulo Classificação RCR.", requireParticipant: false };
+  const participant = document.getElementById("participantSelect")?.value || "";
+  const frame = document.getElementById(target.frameId);
+  const title = document.getElementById(target.titleId);
+  const description = document.getElementById(target.descriptionId);
+  const openLink = document.getElementById(target.openLinkId);
+  const placeholder = document.getElementById(target.placeholderId);
+  if (!frame || !title || !description || !openLink || !placeholder) return;
+  title.textContent = config.title;
+  description.textContent = config.description;
+  openLink.href = buildFrontendUrl(screenKey, config.requireParticipant);
+  if (config.requireParticipant && !participant) {
+    placeholder.textContent = "Selecione uma única concessionária no topo para carregar esta tela nativa com o mesmo contexto usado na Classificação RCR.";
+    placeholder.classList.remove("hidden");
+    frame.classList.add("hidden");
+    frame.removeAttribute("src");
+    return;
+  }
+  placeholder.classList.add("hidden");
+  frame.classList.remove("hidden");
+  frame.src = buildFrontendUrl(screenKey, config.requireParticipant, true);
+}
+
+let comparisonOrder = "score";
+
+function comparisonScore(row) {
+  return row.weighted_score != null && Number.isFinite(Number(row.weighted_score))
+    ? Number(row.weighted_score) : null;
+}
+
+function orderComparisonRows(rows, participantUnion = [], scoreOf = comparisonScore) {
+  const byParticipant = new Map(rows.map(row => [String(row.participant_id), row]));
+  const complete = participantUnion.map(participant => {
+    const id = String(participant.participant_id);
+    const row = byParticipant.get(id);
+    byParticipant.delete(id);
+    return row || { participant_id: participant.participant_id,
+      concessionaire: participant.concessionaire, weighted_score: null, status: "sem_resultado" };
+  });
+  complete.push(...byParticipant.values());
+  return complete.sort((left, right) => {
+    if (comparisonOrder === "score") {
+      const a = scoreOf(left), b = scoreOf(right);
+      if (a == null && b != null) return 1;
+      if (a != null && b == null) return -1;
+      if (a != null && b != null && a !== b) return b - a;
+    }
+    return String(left.concessionaire || "").localeCompare(String(right.concessionaire || ""), "pt-BR", { sensitivity: "base", numeric: true })
+      || String(left.participant_id).localeCompare(String(right.participant_id), "pt-BR", { numeric: true });
+  });
+}
+
+function comparisonParticipants(rankingByIndicator, participants) {
+  const union = new Map();
+  for (const row of [...participants, ...Object.values(rankingByIndicator).flat()]) {
+    if (row.participant_id != null) union.set(String(row.participant_id), {
+      participant_id: row.participant_id, concessionaire: row.concessionaire });
+  }
+  return [...union.values()];
+}
+
+function renderGroupedRankingColumn(title, rows, selectedParticipantId) {
+  if (!rows.length) return `<div class="comparison-column"><h3>${escapeHtml(title)}</h3><p class="empty">Sem resultados calculados para este componente no ciclo.</p></div>`;
+  const validScores = rows
+    .filter((row) => row.weighted_score != null && Number.isFinite(Number(row.weighted_score)))
+    .map((row) => Number(row.weighted_score));
+  const max = Math.max(0, ...validScores);
+  return `<div class="comparison-column"><h3>${escapeHtml(title)}</h3><p class="hint">Comparativo entre concessionárias do ciclo para este componente.</p>${rows.map((row) => {
+    const score = row.weighted_score == null || !Number.isFinite(Number(row.weighted_score)) ? null : Number(row.weighted_score);
+    const pct = max > 0 && score != null ? Math.max(0, Math.min(100, score / max * 100)) : 0;
+    const active = selectedParticipantId && String(row.participant_id) === String(selectedParticipantId) ? " active" : "";
+    return `<div class="bar-row${active}">
+      <div class="name" title="${escapeHtml(row.concessionaire || "—")}">${escapeHtml(row.concessionaire || "—")}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%; background:#0e9f6e"></div></div>
+      <div class="bar-score">${score == null ? "—" : score.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+    </div>`;
+  }).join("")}</div>`;
+}
+
+const PIE_COLORS = ["#0b5fff", "#0e9f6e", "#d98c00", "#d64545", "#7c3aed", "#0891b2", "#be185d", "#6b7385"];
+
+// Gráfico de pizza/rosca genérico via conic-gradient (sem dependência externa).
+// entries: [{label, value, color?}] — usado para distribuições por classe/status
+// que ficam mais claras em círculo do que em barras (ex.: A/B/C/D, conforme/não conforme).
+function renderPieChart(containerId, entriesRaw) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const entries = (entriesRaw || []).filter((e) => e.value > 0);
+  if (!entries.length) {
+    el.innerHTML = '<div class="empty">Sem dados para o gráfico.</div>';
+    return;
+  }
+  const total = entries.reduce((sum, e) => sum + e.value, 0);
+  let acc = 0;
+  const segments = entries.map((e, i) => {
+    const color = e.color || PIE_COLORS[i % PIE_COLORS.length];
+    const start = (acc / total) * 360;
+    acc += e.value;
+    const end = (acc / total) * 360;
+    return `${color} ${start.toFixed(2)}deg ${end.toFixed(2)}deg`;
+  }).join(", ");
+  const legend = entries.map((e, i) => {
+    const color = e.color || PIE_COLORS[i % PIE_COLORS.length];
+    const pct = ((e.value / total) * 100).toFixed(2);
+    return `<li><span class="swatch" style="background:${color}"></span>${escapeHtml(e.label)}: <strong>${e.value}</strong> (${pct}%)</li>`;
+  }).join("");
+  el.innerHTML = `<div class="pie-flex">
+    <div class="pie-chart" style="background: conic-gradient(${segments})"></div>
+    <ul class="pie-legend">${legend}</ul>
+  </div>`;
+}
+
+let cycles = [];
+let currentParticipants = [];
+let currentIndicators = [];
+let allCycleIndicators = [];
+let dashboardLoadVersion = 0;
+let rankingFilterConcessionaire = "";
+let lastClassification = [];
+let lastMacroSummary = [];
+
+function classificationSummaryRows(rows) {
+  const seen = new Set();
+  return (rows || [])
+    .filter((row) => row?.concessionaire)
+    .filter((row) => {
+      const key = String(row.participant_id ?? row.concessionaire);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .sort((left, right) => (
+      resultUpdatedAtSortValue(right?.selected_scenario_updated_at) - resultUpdatedAtSortValue(left?.selected_scenario_updated_at)
+      || String(left.concessionaire).localeCompare(String(right.concessionaire), "pt-BR")
+    ));
+}
+
+function renderResultMetadataTable(rows) {
+  const tbody = document.getElementById("resultMetaTableBody");
+  if (!tbody) return;
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="3" class="empty">Nenhuma concessionária disponível neste filtro.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map((row) => {
+    const meta = scenarioMeta(row);
+    return `<tr>
+      <td title="${escapeHtml(row?.selected_scenario_name || row.concessionaire)}">${escapeHtml(row.concessionaire)}</td>
+      <td>${escapeHtml(meta.updatedAt)}</td>
+      <td title="${escapeHtml(row?.selected_scenario_name || meta.label)}">${escapeHtml(meta.label)}</td>
+    </tr>`;
+  }).join("");
+}
+
+function openResultMetadataModal(rows) {
+  renderResultMetadataTable(rows);
+  document.getElementById("resultMetaModal")?.classList.remove("hidden");
+}
+
+function closeResultMetadataModal() {
+  document.getElementById("resultMetaModal")?.classList.add("hidden");
+}
+
+function selectedParticipant() {
+  const participantId = document.getElementById("participantSelect")?.value;
+  if (!participantId) return null;
+  return currentParticipants.find((row) => String(row.participant_id) === String(participantId)) || null;
+}
+
+function selectedClassificationRow() {
+  const participant = selectedParticipant();
+  if (!participant) return null;
+  return scopedRows(lastClassification)[0]
+    || lastClassification.find((row) => String(row.participant_id) === String(participant.participant_id))
+    || lastClassification.find((row) => row.concessionaire === participant.concessionaire)
+    || null;
+}
+
+function updateSelectedResultMeta() {
+  const container = document.getElementById("selectedResultMeta");
+  const participant = selectedParticipant();
+  const row = selectedClassificationRow();
+  const summaryRows = classificationSummaryRows(scopedRows(lastClassification));
+  if (!container) return;
+  if (!participant) {
+    if (!summaryRows.length) {
+      container.classList.add("hidden");
+      container.innerHTML = "";
+    } else {
+      container.classList.remove("hidden");
+      container.innerHTML = `<button type="button" class="result-meta-trigger" id="openResultMetaBtn">Ver atualização/cenário por concessionária (${summaryRows.length})</button>`;
+      document.getElementById("openResultMetaBtn")?.addEventListener("click", () => openResultMetadataModal(summaryRows));
+    }
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: POWER_BI_SELECTION_EVENT, hasSelection: false, cycleId: document.getElementById("cycleSelect")?.value || "", summaryRows }, "*");
+    }
+    return;
+  }
+  const meta = scenarioMeta(row);
+  container.classList.remove("hidden");
+  container.innerHTML = `
+    <span class="eyebrow">${PUBLIC_DASHBOARD ? "Resultado oficial publicado" : "Cenário em consulta"}</span>
+    <strong>Atualizado em ${escapeHtml(meta.updatedAt)}</strong>
+    <small>${escapeHtml(meta.label)}</small>
+  `;
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({
+      type: POWER_BI_SELECTION_EVENT,
+      hasSelection: true,
+      cycleId: document.getElementById("cycleSelect")?.value || "",
+      participantId: String(participant.participant_id || ""),
+      concessionaire: participant.concessionaire || "",
+      selectedScenarioId: row?.selected_scenario_id ?? null,
+      selectedScenarioName: row?.selected_scenario_name || "",
+      selectedScenarioNumber: row?.selected_scenario_number ?? null,
+      selectedScenarioUpdatedAt: row?.selected_scenario_updated_at || "",
+      subjectLabel: subjectLabel(),
+      summaryRows,
+    }, "*");
+  }
+}
+
+const MACRO_LABELS = {
+  conservacao_manutencao: "I · Conservação, manutenção e IDA",
+  obras_obrigatorias: "II · Obras obrigatórias",
+  atendimento_usuario: "III · Atendimento ao usuário",
+};
+
+async function loadCycles() {
+  cycles = await fetchJson("/cycles");
+  const select = document.getElementById("cycleSelect");
+  select.innerHTML = cycles.map((c) =>
+    `<option value="${c.cycle_id}">${escapeHtml(c.cycle_name || c.cycle_year)} (${c.reference_year})</option>`
+  ).join("");
+  if (cycles.length) select.value = cycles[0].cycle_id;
+}
+
+function renderKpis(cycle, participants, classification) {
+  const row = document.getElementById("kpiRow");
+  const scored = classification.filter(c => c.global_score != null && Number.isFinite(Number(c.global_score)));
+  const avgScore = scored.length
+    ? (scored.reduce((sum, c) => sum + Number(c.global_score), 0) / scored.length).toFixed(2)
+    : "—";
+  const indicatorScores = classification.filter(c => c.indicators_score != null && Number.isFinite(Number(c.indicators_score)));
+  const indicatorAverage = indicatorScores.length ? (indicatorScores.reduce((sum,c)=>sum+Number(c.indicators_score),0)/indicatorScores.length).toFixed(2) : '—';
+  row.innerHTML = `
+    <div class="kpi"><div class="label">Ciclo selecionado</div><div class="value">${escapeHtml(cycle ? (cycle.cycle_name || cycle.cycle_year) : "—")}</div></div>
+    <div class="kpi"><div class="label">Concessionárias no ciclo</div><div class="value">${participants.length}</div></div>
+    <div class="kpi"><div class="label">Concessionárias com nota</div><div class="value">${scored.length}</div></div>
+    <div class="kpi"><div class="label">Nota média · RCR 04</div><div class="value">${avgScore}</div></div>
+    <div class="kpi"><div class="label">Nota média · Indicadores</div><div class="value">${indicatorAverage}</div></div>
+  `;
+}
+
+function renderRanking(classification) {
+  const el = document.getElementById("rankingChart");
+  if (!classification.length) {
+    el.innerHTML = '<div class="empty">Nenhum resultado da Publicação RCR encontrado para este ciclo.</div>';
+    return;
+  }
+  // O mesmo ciclo pode ter mais de um cálculo salvo para a concessionária
+  // (reprocessamento); a API já ordena por updated_at desc, então mantemos
+  // apenas a primeira ocorrência de cada nome para não duplicar barras.
+  const seen = new Set();
+  const deduped = [];
+  for (const c of classification) {
+    if (seen.has(c.concessionaire)) continue;
+    seen.add(c.concessionaire);
+    deduped.push(c);
+  }
+  const byIndicators = document.getElementById('rankingBasis').value === 'indicators';
+  const scoreOf = row => byIndicators ? row.indicators_score : row.rcr04_score ?? row.global_score;
+  const sorted = deduped.sort((a,b) => (scoreOf(b) == null ? -Infinity : Number(scoreOf(b))) - (scoreOf(a) == null ? -Infinity : Number(scoreOf(a))));
+  const bar = (value, label, color, classification, status = "") => {
+    const initialWorks = label === "RCR 04" && /art\.\s*104/i.test(status);
+    const pending = value != null && !classification;
+    const badge = classification ? `Classe ${escapeHtml(classification)}` : initialWorks ? "Art. 104" : pending ? "Pendente" : "—";
+    const explanation = initialWorks ? status : pending ? (status || "Avaliação incompleta; pontuação parcial, sem classe oficial") : `Classe ${label}`;
+    return `<div style="display:flex;align-items:center;gap:8px;min-width:0"><span style="width:70px;flex-shrink:0">${label}</span><div class="bar-track"><div class="bar-fill" style="width:${value==null?0:Math.max(0,Math.min(100,Number(value)*10))}%;background:${color}"></div></div><span style="width:48px;text-align:right" title="${pending?'Pontuação parcial; avaliação incompleta':''}">${value==null?'—':Number(value).toFixed(2)}</span><span class="badge ${badgeClass(classification)}" style="min-width:52px;flex-shrink:0;text-align:center" title="${escapeHtml(explanation)}">${badge}</span></div>`;
+  };
+  el.innerHTML = sorted.map(c => {
+    const meta = scenarioMeta(c);
+    return `<div class="bar-row bar-row-clickable${c.concessionaire===rankingFilterConcessionaire?' active':''}" data-concessionaire="${escapeHtml(c.concessionaire)}" title="Clique para filtrar toda a tela; clique novamente para limpar"><div class="ranking-name"><div class="primary">${escapeHtml(c.concessionaire)}</div><div class="meta" title="${escapeHtml(meta.detail)}">${escapeHtml(meta.label)} · ${escapeHtml(meta.updatedAt)}</div></div><div style="flex:1;min-width:0;display:grid;gap:5px">${bar(c.rcr04_score??c.global_score,'RCR 04','#006d87',c.rcr04_classification||c.global_classification,c.rcr04_status_label)}${bar(c.indicators_score,'Indicadores','#7c3aed',c.indicators_classification)}</div></div>`;
+  }).join('');
+  renderClassDistribution(deduped);
+}
+
+// Contagem de concessionárias por classe oficial (A/B/C/D) — a mesma
+// classificação já usada nos badges do ranking, mas em formato de pizza,
+// que deixa a proporção entre classes muito mais evidente do que barras.
+function renderClassDistribution(deduped) {
+  const counts = new Map();
+  for (const c of deduped) {
+    const classe = String(c.global_classification || c.rcr_classification || "—").trim().toUpperCase() || "—";
+    counts.set(classe, (counts.get(classe) || 0) + 1);
+  }
+  const CLASS_COLORS = { A: "#1a9c56", B: "#d98c00", C: "#d64545", D: "#8a1f1f" };
+  const entries = Array.from(counts.entries())
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([label, value]) => ({ label: `Classe ${label}`, value, color: CLASS_COLORS[label] || "#6b7385" }));
+  renderPieChart("classDistributionChart", entries);
+}
+
+function renderParticipantsTable(participants, classification = []) {
+  const tbody = document.querySelector("#participantsTable tbody");
+  const classificationByParticipant = new Map(
+    (classification || []).map((row) => [String(row.participant_id), row])
+  );
+  if (!participants.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">Sem concessionárias para este ciclo.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = participants.map((p) => `
+    <tr>
+      <td>${escapeHtml(p.concessionaire)}</td>
+      <td>${escapeHtml(p.concession_year)}</td>
+      <td>${escapeHtml(p.concession_phase)}</td><td>${escapeHtml(p.regulatory_status_label || 'Normal')}</td>
+      <td><span class="badge ${badgeClass(p.official_classification)}">${escapeHtml(p.official_classification || "—")}</span></td>
+      <td>${escapeHtml(p.classification_eligibility)}</td>
+      <td>${escapeHtml(scenarioMeta(classificationByParticipant.get(String(p.participant_id))).label)}</td>
+      <td>${escapeHtml(scenarioMeta(classificationByParticipant.get(String(p.participant_id))).updatedAt)}</td>
+    </tr>
+  `).join("");
+}
+
+function renderMacroChart(indicators) {
+ const el=document.getElementById('macroChart');
+ if(!indicators.length){el.innerHTML='<div class="empty">Sem indicadores calculados neste filtro.</div>';return;}
+ const names={atendimento_usuario:'Atendimento ao usuário',conservacao_manutencao:'Conservação e manutenção',obras_obrigatorias:'Obras obrigatórias'};
+ const groups=new Map();
+ for(const row of indicators){
+  if(row.weighted_score==null || !Number.isFinite(Number(row.weighted_score)))continue;
+  const key=row.macro_key||'sem_macro';if(!groups.has(key))groups.set(key,new Map());
+  const values=groups.get(key),participant=row.participant_id??row.concessionaire;
+  values.set(participant,(values.get(participant)||0)+Number(row.weighted_score));
+ }
+ el.innerHTML=[...groups].map(([key,values])=>{const score=[...values.values()].reduce((a,b)=>a+b,0)/values.size;return `<div class="bar-row"><div class="name">${escapeHtml(names[key]||key)}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.max(0,Math.min(100,score*10))}%;background:#7c3aed"></div></div><div class="bar-score">${score.toFixed(2)}</div></div>`;}).join('')+'<p class="hint">Soma dos pontos ponderados dos indicadores de cada macrogrupo. Com várias concessionárias: média dessas somas entre as concessionárias com dados no grupo. Notas ausentes não são convertidas em zero.</p>';
+}
+
+function renderIndicatorsTable(indicators) {
+  currentIndicators = indicators;
+  const tbody = document.querySelector("#indicatorsTable tbody");
+  const filtered = rankingFilterConcessionaire
+    ? indicators.filter((row) => row.concessionaire === rankingFilterConcessionaire)
+    : indicators;
+  const titleEl = document.getElementById("indicatorsTableTitle");
+  if (titleEl) {
+    titleEl.innerHTML = rankingFilterConcessionaire
+      ? `Últimos indicadores calculados — <strong>${escapeHtml(rankingFilterConcessionaire)}</strong> <a href="#" id="clearIndicatorsFilter" style="font-weight:400; font-size:12px;">(limpar filtro)</a>`
+      : "Últimos indicadores calculados";
+    const clearLink = document.getElementById("clearIndicatorsFilter");
+    if (clearLink) {
+      clearLink.addEventListener("click", (event) => {
+        event.preventDefault();
+        document.getElementById('participantSelect').value = '';
+        document.getElementById('participantSelect').dispatchEvent(new Event('change'));
+      });
+    }
+  }
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="6" class="empty">${rankingFilterConcessionaire ? "Sem indicadores calculados para esta concessionária neste ciclo." : "Sem indicadores calculados para este ciclo."}</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filtered.slice(0, 200).map((row) => `
+    <tr>
+      <td>${escapeHtml(row.concessionaire)}</td>
+      <td>${escapeHtml(row.macro_key)}</td>
+      <td>${escapeHtml(row.indicator_name || row.indicator_key)}</td>
+      <td>${escapeHtml(row.level ?? "—")}</td>
+      <td>${row.level_score == null ? "—" : Number(row.level_score).toFixed(2)}</td>
+      <td>${row.weighted_score != null ? Number(row.weighted_score).toFixed(2) : "—"}</td>
+    </tr>
+  `).join("");
+}
+
+async function loadCycleData() {
+  const loadVersion = ++dashboardLoadVersion;
+  const cycleId = document.getElementById("cycleSelect").value;
+  const cycle = cycles.find((c) => String(c.cycle_id) === String(cycleId));
+  const [participants, classification, indicators] = await Promise.all([
+    fetchJson(`/participants?cycle_id=${cycleId}`),
+    fetchJson(`/classification?cycle_id=${cycleId}`),
+    fetchJson(`/indicator-results?cycle_id=${cycleId}`),
+  ]);
+  if (loadVersion !== dashboardLoadVersion) return;
+  allCycleIndicators = indicators;
+  currentParticipants = participants;
+  lastClassification = classification;
+  rankingFilterConcessionaire = "";
+  renderKpis(cycle, participants, classification);
+  renderRanking(classification);
+  renderParticipantsTable(participants, classification);
+  renderMacroChart(indicators);
+  renderIndicatorsTable(indicators);
+  renderParticipantSelect(participants);
+  await loadResumoData();
+  applyGlobalScope();
+}
+
+function renderParticipantSelect(participants) {
+  const select = document.getElementById("participantSelect");
+  const previous = select.value;
+  select.innerHTML = '<option value="">Todas as concessionárias</option>' + participants.map((p) =>
+    `<option value="${p.participant_id}">${escapeHtml(p.concessionaire)}</option>`
+  ).join("");
+  if (previous && participants.some((p) => String(p.participant_id) === previous)) select.value = previous;
+}
+
+function subjectLabel() {
+  const participantId = document.getElementById("participantSelect").value;
+  if (!participantId) return "todas as concessionárias";
+  const found = currentParticipants.find((p) => String(p.participant_id) === String(participantId));
+  return found ? found.concessionaire : `participante ${participantId}`;
+}
+
+function renderMacroSummary(rows) {
+  lastMacroSummary = rows;
+  document.getElementById("resumo1Subject").textContent = subjectLabel();
+  const chart = document.getElementById("macroSummaryChart");
+  const tbody = document.querySelector("#macroSummaryTable tbody");
+  if (!rows.length) {
+    chart.innerHTML = '<div class="empty">Sem dados de macroindicador para este filtro.</div>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Sem dados.</td></tr>';
+    return;
+  }
+  const selectedParticipantId = document.getElementById("participantSelect").value;
+  const macroPanels = [
+    ["I", "Macroindicador I · Conservação, manutenção e IDA", "#0b5fff"],
+    ["II", "Macroindicador II · Obras obrigatórias", "#0e9f6e"],
+    ["III", "Macroindicador III · Atendimento ao usuário", "#7c3aed"],
+  ];
+  const participantUnion = comparisonParticipants({ macros: rows }, currentParticipants);
+  const percentOf = row => row.sum_weighted_score != null && Number.isFinite(Number(row.sum_weighted_score)) && Number(row.sum_max_points) > 0
+    ? Number(row.sum_weighted_score) : null;
+  const orderHint = comparisonOrder === "concessionaire"
+    ? "Barras por concessionária, na mesma ordem alfabética nos três gráficos. — indica resultado ausente."
+    : "Barras por concessionária, do maior para o menor número de pontos no macro. — indica resultado ausente.";
+  chart.innerHTML = macroPanels.map(([roman, title, color]) => {
+    const items = orderComparisonRows(
+      rows.filter((row) => String(row.macro_roman || "") === roman), participantUnion, percentOf,
+    );
+    if (!items.length) {
+      return `<div class="macro-summary-panel"><h3>${escapeHtml(title)}</h3><p class="empty">Sem concessionárias calculadas neste macroindicador.</p></div>`;
+    }
+    const maximum = Number(items.find(row=>row.official_max)?.official_max || ({I:4.25,II:3,III:3})[roman]);
+    const pointLabel=value=>Number(value).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+    return `<div class="macro-summary-panel"><h3>${escapeHtml(title)}</h3><p class="hint">${orderHint}</p><div class="macro-point-scale"><span>0</span><span>${pointLabel(maximum/2)}</span><span>${pointLabel(maximum)} pontos</span></div>${items.map((row) => {
+      const achieved = percentOf(row);
+      const pct = achieved != null ? Math.max(0, Math.min(100, 100*achieved/maximum)) : 0;
+      const active = selectedParticipantId && String(row.participant_id) === String(selectedParticipantId) ? " active" : "";
+      return `<div class="bar-row${active}">
+        <div class="name" title="${escapeHtml(row.concessionaire)}">${escapeHtml(row.concessionaire)}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct}%; background:${color}"></div></div>
+        <div class="bar-score">${achieved != null ? pointLabel(achieved) : "—"}</div>
+        <div class="macro-load-coverage" title="Itens carregados com resultado válido divididos pelos itens exigidos; nota zero também conta como carregada.">${row.load_coverage_percent != null ? `Cobertura: ${Math.round(row.load_coverage_percent)}% · ${row.loaded_indicator_count}/${row.required_indicator_count} carregados · ${row.pending_indicator_count} pendente(s)` : 'Cobertura: escopo não disponível'}</div>
+      </div>`;
+    }).join("")}</div>`;
+  }).join("");
+  const sorted = [...rows].sort((a, b) => (a.macro_roman || "").localeCompare(b.macro_roman || "") || String(a.concessionaire || "").localeCompare(String(b.concessionaire || ""), "pt-BR"));
+  tbody.innerHTML = sorted.map((r) => `
+    <tr>
+      <td>${escapeHtml(r.concessionaire)}</td>
+      <td>${escapeHtml(r.macro_label)}</td>
+      <td>${r.indicator_count}</td>
+      <td>${Number(r.sum_max_points) > 0 && r.sum_weighted_score != null ? Number(r.sum_weighted_score).toFixed(2) : "—"}</td>
+      <td>${r.official_max != null ? r.official_max : r.sum_max_points.toFixed(2)}</td>
+      <td>${Number(r.sum_max_points) > 0 && r.sum_weighted_score != null && Number(r.official_max || r.sum_max_points) > 0 ? (100 * Number(r.sum_weighted_score) / Number(r.official_max || r.sum_max_points)).toFixed(2) + "%" : "—"}</td>
+      <td>${r.required_indicator_count != null ? `${r.loaded_indicator_count}/${r.required_indicator_count}` : '—'}</td>
+      <td>${r.pending_indicator_count ?? '—'}</td>
+      <td>${r.load_coverage_percent != null ? Math.round(r.load_coverage_percent)+'%' : '—'}</td>
+    </tr>
+  `).join("");
+}
+
+function renderResumo2(rows) {
+  document.getElementById("resumo2Subject").textContent = subjectLabel();
+  const macroFilter = document.getElementById("macroFilterResumo2").value;
+  const filtered = macroFilter ? rows.filter((r) => r.macro_key === macroFilter) : rows;
+  const tbody = document.querySelector("#resumo2Table tbody");
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="12" class="empty">Sem indicadores para este filtro.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = filtered.map((row) => `
+    <tr>
+      <td>${escapeHtml(row.concessionaire)}</td>
+      <td>${escapeHtml(MACRO_LABELS[row.macro_key] || row.macro_key)}</td>
+      <td>${escapeHtml(row.indicator_name || row.indicator_key)}</td>
+      <td>${escapeHtml(row.raw_value ?? "—")}</td>
+      <td>${escapeHtml(row.unit ?? "—")}</td>
+      <td>${escapeHtml(row.level ?? "—")}</td>
+      <td>${row.level_score != null ? Number(row.level_score).toFixed(2) : "—"}</td>
+      <td>${row.weighted_score != null ? Number(row.weighted_score).toFixed(2) : "—"}</td>
+      <td>${row.max_points != null ? Number(row.max_points).toFixed(2) : "—"}</td>
+      <td>${escapeHtml(row.source_type ?? "—")}</td>
+      <td>${escapeHtml(row.status ?? "—")}</td>
+      <td>${escapeHtml(formatDateTime(row.updated_at))}</td>
+    </tr>
+  `).join("");
+}
+
+function renderResumo3(rows) {
+  document.getElementById("resumo3Subject").textContent = subjectLabel();
+  const tbody = document.querySelector("#resumo3Table tbody");
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="10" class="empty">Sem indicadores para este filtro.</td></tr>';
+    renderPieChart("resumo3StatusChart", []);
+    return;
+  }
+  tbody.innerHTML = rows.map((row) => `
+    <tr>
+      <td>${escapeHtml(row.concessionaire)}</td>
+      <td>${escapeHtml(MACRO_LABELS[row.macro_key] || row.macro_key)}</td>
+      <td>${escapeHtml(row.indicator_name || row.indicator_key)}</td>
+      <td>${escapeHtml(row.raw_value ?? "—")}</td>
+      <td>${escapeHtml(row.unit ?? "—")}</td>
+      <td>${escapeHtml(row.level ?? "—")}</td>
+      <td>${row.weighted_score != null ? Number(row.weighted_score).toFixed(2) : "—"}</td>
+      <td>${escapeHtml(row.source_type ?? "—")}</td>
+      <td>${escapeHtml(row.status ?? "—")}</td>
+      <td>${escapeHtml(row.updated_at ?? "—")}</td>
+    </tr>
+  `).join("");
+  const statusCounts = new Map();
+  for (const row of rows) {
+    const status = String(row.status ?? "—").trim() || "—";
+    statusCounts.set(status, (statusCounts.get(status) || 0) + 1);
+  }
+  renderPieChart("resumo3StatusChart", Array.from(statusCounts.entries()).map(([label, value]) => ({ label, value })));
+}
+
+async function loadResumoData() {
+  const cycleId = document.getElementById("cycleSelect").value;
+  const participantId = document.getElementById("participantSelect").value;
+  const suffix = `?cycle_id=${cycleId}` + (participantId ? `&participant_id=${participantId}` : "");
+  const [macroSummary, indicatorResults] = await Promise.all([
+    fetchJson(`/macro-summary?cycle_id=${cycleId}`),
+    fetchJson(`/indicator-results${suffix}`),
+  ]);
+  renderMacroSummary(macroSummary);
+  renderResumo2(indicatorResults);
+  renderResumo3(indicatorResults);
+}
+
+let indicatorCatalogItems = [];
+let consumerRawOffset = 0;
+const CONSUMER_RAW_LIMIT = 200;
+
+function renderIndicatorSelect(items) {
+  const select = document.getElementById("indicatorSelect");
+  const previous = select.value;
+  if (!items.length) {
+    select.innerHTML = '<option value="">Nenhum indicador calculado neste ciclo</option>';
+    return;
+  }
+  const groups = new Map();
+  items.forEach((item) => {
+    const groupLabel = item.macro_label || "Outros";
+    if (!groups.has(groupLabel)) groups.set(groupLabel, []);
+    groups.get(groupLabel).push(item);
+  });
+  select.innerHTML = Array.from(groups.entries()).map(([groupLabel, groupItems]) => {
+    const options = groupItems.map((item) =>
+      `<option value="${escapeHtml(item.indicator_key)}">${escapeHtml(item.indicator_name || item.indicator_key)}</option>`
+    ).join("");
+    return `<optgroup label="${escapeHtml(groupLabel)}">${options}</optgroup>`;
+  }).join("");
+  if (previous && items.some((item) => item.indicator_key === previous)) select.value = previous;
+}
+
+async function loadIndicatorCatalog() {
+  const cycleId = document.getElementById("cycleSelect").value;
+  indicatorCatalogItems = await fetchJson(`/indicator-catalog?cycle_id=${cycleId}`);
+  renderIndicatorSelect(indicatorCatalogItems);
+  renderIndicatorNavigation();
+  await loadIndicatorRanking();
+}
+
+async function loadIndicatorRanking() {
+  const cycleId = document.getElementById("cycleSelect").value;
+  const indicatorKey = document.getElementById("indicatorSelect").value;
+  const chart = document.getElementById("indicatorRankingChart");
+  const tbody = document.querySelector("#indicatorRankingTable tbody");
+  const comparisonGrid = document.getElementById("indicatorComparisonGrid");
+  const nativeBlock = document.getElementById("indicatorNativeDetail");
+  const nativeTitle = document.getElementById("indicatorNativeDetailTitle");
+  const nativeHint = document.getElementById("indicatorNativeDetailHint");
+  const nativeOpen = document.getElementById("indicatorNativeDetailOpen");
+  const nativePlaceholder = document.getElementById("indicatorNativeDetailPlaceholder");
+  const nativeFrame = document.getElementById("indicatorNativeDetailFrame");
+  if (!indicatorKey) {
+    if (comparisonGrid) comparisonGrid.innerHTML = "";
+    chart.innerHTML = '<div class="empty">Nenhum indicador disponível para este ciclo.</div>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Sem dados.</td></tr>';
+    if (nativeBlock) nativeBlock.classList.add("hidden");
+    return;
+  }
+
+  const group = indicatorGroupConfig(indicatorKey);
+  const rankingEntries = await Promise.all(group.keys.map(async (key) => ([
+    key,
+    await fetchJson(`/indicator-ranking?cycle_id=${cycleId}&indicator_key=${encodeURIComponent(key)}`),
+  ])));
+  const rankingByIndicator = Object.fromEntries(rankingEntries);
+  const participantUnion = comparisonParticipants(rankingByIndicator, currentParticipants);
+  for (const key of group.keys) rankingByIndicator[key] = orderComparisonRows(rankingByIndicator[key] || [], participantUnion);
+  const rows = rankingByIndicator[indicatorKey] || [];
+  if (!rows.length && group.keys.length === 1) {
+    if (comparisonGrid) comparisonGrid.innerHTML = "";
+    chart.innerHTML = '<div class="empty">Sem resultados calculados para este indicador neste ciclo.</div>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Sem dados.</td></tr>';
+    if (nativeBlock) nativeBlock.classList.add("hidden");
+    return;
+  }
+
+  const selectedParticipantId = document.getElementById("participantSelect").value;
+  if (group.keys.length > 1 && comparisonGrid) {
+    comparisonGrid.innerHTML = group.keys.map((key) => {
+      const item = indicatorCatalogItems.find((entry) => entry.indicator_key === key);
+      return renderGroupedRankingColumn(
+        item?.indicator_name || key,
+        rankingByIndicator[key] || [],
+        selectedParticipantId,
+      );
+    }).join("");
+    chart.innerHTML = `<p class="hint">Comparativo reorganizado lado a lado para os componentes do grupo ${escapeHtml(group.title)}. A tabela abaixo continua focada no componente selecionado no seletor.</p>`;
+  } else {
+    if (comparisonGrid) comparisonGrid.innerHTML = "";
+    const validScores = rows.filter((row) => row.weighted_score != null && Number.isFinite(Number(row.weighted_score))).map((row) => Number(row.weighted_score));
+    const max = Math.max(0, ...validScores);
+    chart.innerHTML = `<p class="hint">Pontos ponderados · escala relativa ao maior valor do ciclo: ${max.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}. Zero não possui preenchimento; — indica nota ausente.</p>` + rows.map((row) => {
+      const score = row.weighted_score == null || !Number.isFinite(Number(row.weighted_score)) ? null : Number(row.weighted_score);
+      const pct = max > 0 && score != null ? Math.max(0, Math.min(100, score / max * 100)) : 0;
+      const active = selectedParticipantId && String(row.participant_id) === String(selectedParticipantId) ? " active" : "";
+      return `<div class="bar-row${active}">
+        <div class="name" title="${escapeHtml(row.concessionaire || "—")}">${escapeHtml(row.concessionaire || "—")}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct}%; background:#0e9f6e"></div></div>
+        <div class="bar-score">${score == null ? "—" : score.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+      </div>`;
+    }).join("");
+  }
+  tbody.innerHTML = rows.map((r) => `
+    <tr>
+      <td>${escapeHtml(r.concessionaire || "—")}</td>
+      <td>${escapeHtml(r.raw_value ?? "—")}</td>
+      <td>${escapeHtml(r.unit ?? "—")}</td>
+      <td>${escapeHtml(r.level ?? "—")}</td>
+      <td>${r.weighted_score != null ? Number(r.weighted_score).toFixed(2) : "—"}</td>
+      <td>${escapeHtml(r.source_type ?? "—")}</td>
+    </tr>
+  `).join("");
+
+  const screenKey = group.screenKey || INDICATOR_SCREEN_MAP[indicatorKey] || "";
+  if (!nativeBlock) return;
+  if (!screenKey) {
+    nativeBlock.classList.add("hidden");
+    nativeFrame.removeAttribute("src");
+    return;
+  }
+  const config = LINKED_SCREEN_CONFIG[screenKey] || { title: screenKey, description: "Tela nativa vinculada ao indicador.", requireParticipant: true };
+  nativeBlock.classList.remove("hidden");
+  nativeTitle.textContent = config.title;
+  nativeHint.textContent = config.description;
+  nativeOpen.href = buildFrontendUrl(screenKey, true);
+  if (!selectedParticipantId) {
+    nativePlaceholder.textContent = "Selecione uma única concessionária no topo para carregar abaixo a tela nativa detalhada deste indicador.";
+    nativePlaceholder.classList.remove("hidden");
+    nativeFrame.classList.add("hidden");
+    nativeFrame.removeAttribute("src");
+    return;
+  }
+  nativePlaceholder.classList.add("hidden");
+  nativeFrame.classList.remove("hidden");
+  nativeFrame.src = buildFrontendUrl(screenKey, true, true);
+}
+
+// Same component boundaries as rcr_full_service._consumer_level_*.
+function consumerComponentCells(value, component) {
+  if (value == null || value === '' || !Number.isFinite(Number(value))) return '<td>—</td><td>—</td>';
+  const n = Number(value);
+  const level = component === 'solution' ? (n >= 90 ? 1 : n >= 80 ? 2 : n >= 70 ? 3 : 4)
+    : component === 'satisfaction' ? (n >= 5 ? 1 : n >= 4 ? 2 : n >= 3 ? 3 : 4)
+    : component === 'answered' ? (n >= 100 ? 1 : n >= 98 ? 2 : n > 95 ? 3 : 4)
+    : (n <= 10 ? 1 : n <= 15 ? 2 : n <= 20 ? 3 : 4);
+  return `<td>${level}</td><td>${({1:10,2:7,3:4,4:0})[level]}</td>`;
+}
+
+async function loadConsumerSummary() {
+  consumerMemoryVersion++;
+  document.getElementById("consumerMemory")?.remove();
+  const cycleId = document.getElementById("cycleSelect").value;
+  const participantId = document.getElementById("participantSelect").value;
+  document.getElementById("consumerSummarySubject").textContent = subjectLabel();
+  const suffix = `?cycle_id=${cycleId}` + (participantId ? `&participant_id=${participantId}` : "");
+  const rows = await fetchJson(`/consumer-summary${suffix}`);
+  const tbody = document.querySelector("#consumerSummaryTable tbody");
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="19" class="empty">Sem dados do Consumidor.gov importados para este filtro.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map((r) => `
+    <tr>
+      <td>${escapeHtml(r.concessionaire || "—")}</td>
+      <td>${escapeHtml(r.consumer_gov_name || "—")}</td>
+        <td><button type="button" data-consumer-memory="${Number(r.participant_id)}">Ver memória</button></td>
+        <td>Ano-concessão</td>
+        <td>${escapeHtml(r.period_start || "Não definido")}</td>
+        <td>${escapeHtml(r.period_end || "Não definido")}</td>
+      <td>${r.total_finalized ?? 0}</td>
+      <td>${r.solution_index != null ? r.solution_index.toFixed(2) + "%" : "—"}</td>
+        ${consumerComponentCells(r.solution_index, 'solution')}
+      <td>${r.satisfaction_index != null ? r.satisfaction_index.toFixed(2) : "—"}</td>
+        ${consumerComponentCells(r.satisfaction_index, 'satisfaction')}
+      <td>${r.answered_index != null ? r.answered_index.toFixed(2) + "%" : "—"}</td>
+        ${consumerComponentCells(r.answered_index, 'answered')}
+      <td>${r.average_response_days != null ? r.average_response_days.toFixed(2) : "—"}</td>
+        ${consumerComponentCells(r.average_response_days, 'days')}
+    </tr>
+  `).join("");
+}
+
+
+function consumerTraceFlags(row) {
+ const plain=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+ const status=plain(row.complaint_status), evaluation=plain(row.evaluation);
+ const eligible=!!row.finalized_at && !status.includes('cancelad') && !status.includes('encerrad');
+ const solution=eligible && ((evaluation.includes('resolvid')&&!evaluation.includes('nao resolvid'))||evaluation.includes('nao avaliad'));
+ const answered=eligible && !!(row.answered||row.answered_at);
+ return {eligible,solution,answered,score:eligible&&row.satisfaction_score!=null?Number(row.satisfaction_score):null,days:answered&&row.response_days!=null?Number(row.response_days):null,
+ reason:eligible?'Incluído':!row.finalized_at?'Sem finalização':status.includes('cancelad')?'Cancelada':'Encerrada'};
+}
+let consumerMemoryVersion=0;
+async function showConsumerMemory(participantId) {
+ const version=++consumerMemoryVersion;
+ let panel=document.getElementById('consumerMemory');
+ if(!panel){panel=document.createElement('div');panel.id='consumerMemory';panel.className='card';document.getElementById('tab-consumidor_gov').appendChild(panel);}
+ panel.textContent='Carregando todos os registros do período para conferir a memória…';
+ const cycleId=document.getElementById('cycleSelect').value;
+ try {
+ const summary=await fetchJson(`/consumer-summary?cycle_id=${cycleId}&participant_id=${participantId}`);
+ const source=summary[0];if(!source)throw new Error('Resumo não encontrado');
+ const rows=[];let total=null;
+ do {
+  const response=await fetchConsumerArchive(`${API_BASE}/consumer-raw?cycle_id=${cycleId}&participant_id=${participantId}&offset=${rows.length}&limit=1000${regulatoryStatusQuery() ? '&'+regulatoryStatusQuery() : ''}`);
+  if(!response.ok)throw new Error('Falha ao carregar registros auditáveis');
+  const payload=await response.json();const page=payload.value||[];
+  if(total!==null&&total!==payload.total)throw new Error('A base mudou durante a leitura. Abra a memória novamente');
+  total=payload.total||0;rows.push(...page);
+  if(rows.length<total&&!page.length)throw new Error('Paginação incompleta');
+ }while(rows.length<total);
+ if(version!==consumerMemoryVersion)return;
+ const items=rows.map(row=>({row,...consumerTraceFlags(row)}));
+ const eligible=items.filter(r=>r.eligible),solved=items.filter(r=>r.solution),answered=items.filter(r=>r.answered),scores=items.filter(r=>r.score!=null),days=items.filter(r=>r.days!=null);
+ const scoreSum=scores.reduce((sum,r)=>sum+r.score,0),daySum=days.reduce((sum,r)=>sum+r.days,0);
+ const definitions=[['Índice de solução',solved.length,eligible.length,100,'solution_index','solution'],['Índice de satisfação',scoreSum,scores.length,1,'satisfaction_index','satisfaction'],['Índice de resposta',answered.length,eligible.length,100,'answered_index','answered'],['Prazo médio (dias)',daySum,days.length,1,'average_response_days','days']];
+ const number=n=>n==null?'—':Number(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+ panel.innerHTML=`<h2>Memória de cálculo — ${escapeHtml(source.concessionaire)}</h2>
+ <p class="hint">Ano-concessão · ${escapeHtml(source.period_start||'Sem início definido')} (inclusive) a ${escapeHtml(source.period_end||'Sem fim definido')} (exclusive). Filtro pela data de finalização. ${rows.length} registros consultados; ${eligible.length} elegíveis; ${rows.length-eligible.length} excluídos. Fonte: dados brutos importados. Conferência do cálculo exibido, sem alterar a classificação oficial.</p>
+ <div class="table-wrap"><table id="consumerMemoryFormulas"><thead><tr><th>Indicador</th><th>Memória</th><th>Resultado</th><th>Resumo</th><th>Conferência</th><th>Nível</th><th>Nota</th></tr></thead><tbody>${definitions.map(([label,num,den,factor,key,component])=>{const result=den?Math.round((num/den*factor+Number.EPSILON)*100)/100:null;const reference=source[key];const match=result==null?reference==null:reference!=null&&Math.abs(result-reference)<0.011;return `<tr><td>${label}</td><td>${number(num)} ÷ ${den}${factor===100?' × 100':''}</td><td>${number(result)}</td><td>${number(reference)}</td><td>${match?'Confere':'Divergência — revisar fonte'}</td>${consumerComponentCells(reference,component)}</tr>`;}).join('')}</tbody></table></div>
+ <p class="hint">Solução: resolvidas + finalizadas não avaliadas / elegíveis. Satisfação: soma das notas / registros com nota. Resposta: respondidas / elegíveis. Prazo: soma dos dias / respondidas com prazo informado. Canceladas e encerradas são excluídas. Campos ausentes não viram zero.</p>
+ <div class="table-wrap"><table id="consumerMemoryRecords" data-report-table-kind="detail"><thead><tr><th>ID</th><th>Protocolo</th><th>Arquivo fonte</th><th>Linha fonte</th><th>Finalização</th><th>Status</th><th>Avaliação</th><th>Elegibilidade</th><th>Numerador solução</th><th>Nota usada</th><th>Respondida</th><th>Dias usados</th></tr></thead><tbody>${items.map(item=>`<tr><td>${item.row.id}</td><td>${escapeHtml(item.row.protocol||'—')}</td><td>${escapeHtml(item.row.source_filename||'—')}</td><td>${item.row.source_row_number??'—'}</td><td>${escapeHtml(item.row.finalized_at||'—')}</td><td>${escapeHtml(item.row.complaint_status||'—')}</td><td>${escapeHtml(item.row.evaluation||'—')}</td><td>${item.reason}</td><td>${item.solution?'Sim':'Não'}</td><td>${number(item.score)}</td><td>${item.answered?'Sim':'Não'}</td><td>${number(item.days)}</td></tr>`).join('')}</tbody></table></div>`;
+ initializeColumnSizing();panel.scrollIntoView({behavior:'smooth',block:'start'});
+ }catch(error){if(version===consumerMemoryVersion)panel.textContent='Não foi possível conferir a memória: '+error.message;}
+}
+document.getElementById('consumerSummaryTable').addEventListener('click',event=>{const button=event.target.closest('[data-consumer-memory]');if(button)showConsumerMemory(Number(button.dataset.consumerMemory));});
+
+async function loadConsumerRaw(resetOffset) {
+  if (resetOffset) consumerRawOffset = 0;
+  const cycleId = document.getElementById("cycleSelect").value;
+  const participantId = document.getElementById("participantSelect").value;
+  document.getElementById("consumerRawSubject").textContent = subjectLabel();
+  const params = new URLSearchParams({ cycle_id: cycleId, offset: consumerRawOffset, limit: CONSUMER_RAW_LIMIT });
+  if (participantId) params.set("participant_id", participantId);
+  const response = await fetchConsumerArchive(`${API_BASE}/consumer-raw?${params.toString()}${regulatoryStatusQuery() ? '&'+regulatoryStatusQuery() : ''}`);
+  if (!response.ok) throw new Error("Falha ao consultar /consumer-raw");
+  const payload = await response.json();
+  const rows = payload.value || [];
+  const total = payload.total || 0;
+  const tbody = document.querySelector("#consumerRawTable tbody");
+  const countEl = document.getElementById("consumerRawCount");
+  const from = total ? consumerRawOffset + 1 : 0;
+  const to = consumerRawOffset + rows.length;
+  countEl.textContent = `${from}–${to} de ${total} reclamação(ões)`;
+  document.getElementById("consumerRawPrev").disabled = consumerRawOffset <= 0;
+  document.getElementById("consumerRawNext").disabled = to >= total;
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="10" class="empty">Sem reclamações do Consumidor.gov para este filtro.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map((row) => `
+    <tr>
+      <td>${escapeHtml(row.concessionaire || "—")}</td>
+      <td>${escapeHtml(row.protocol || "—")}</td>
+      <td>${escapeHtml(row.complaint_status || "—")}</td>
+      <td>${escapeHtml(row.evaluation || "—")}</td>
+      <td>${row.satisfaction_score != null ? row.satisfaction_score : "—"}</td>
+      <td>${escapeHtml(row.area || "—")}</td>
+      <td>${escapeHtml(row.subject || "—")}</td>
+      <td>${escapeHtml(row.problem_group || "—")}</td>
+      <td>${escapeHtml(row.finalized_at || "—")}</td>
+      <td>${row.response_days != null ? row.response_days : "—"}</td>
+    </tr>
+  `).join("");
+}
+
+async function loadOperationalVehicleSummary() {
+  const cycleId = document.getElementById("cycleSelect").value;
+  const participantId = document.getElementById("participantSelect").value;
+  document.getElementById("operationalVehicleSubject").textContent = subjectLabel();
+  const suffix = `?cycle_id=${cycleId}` + (participantId ? `&participant_id=${participantId}` : "");
+  const rows = await fetchJson(`/operational-vehicle-summary${suffix}`);
+  const tbody = document.querySelector("#operationalVehicleSummaryTable tbody");
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">Sem cálculo de atendimento médico/mecânico para este filtro.</td></tr>';
+    renderPieChart("operationalStatusChart", []);
+    return;
+  }
+  tbody.innerHTML = rows.map((r) => `
+    <tr>
+      <td>${escapeHtml(r.concessionaire || "—")}</td>
+      <td>${escapeHtml(r.vehicle_label || r.vehicle_type || "—")}</td>
+      <td>${r.annual_percent != null ? Number(r.annual_percent).toFixed(2) + "%" : "—"}</td>
+      <td><span class="badge ${badgeClass(r.level != null ? String.fromCharCode(64 + Number(r.level)) : "")}">${r.level != null ? "Nível " + r.level : "—"}</span></td>
+      <td>${r.valid_months ?? 0}/${r.expected_months ?? 12}</td>
+      <td>${r.coverage_percent != null ? Number(r.coverage_percent).toFixed(0) + "%" : "—"}</td>
+      <td>${escapeHtml(r.parameter_status || "—")}</td>
+    </tr>
+  `).join("");
+  const statusCounts = new Map();
+  for (const r of rows) {
+    const status = String(r.parameter_status ?? "—").trim() || "—";
+    statusCounts.set(status, (statusCounts.get(status) || 0) + 1);
+  }
+  renderPieChart("operationalStatusChart", Array.from(statusCounts.entries()).map(([label, value]) => ({ label, value })));
+}
+
+async function loadOperationalVehicleMonthly() {
+  const cycleId = document.getElementById("cycleSelect").value;
+  const participantId = document.getElementById("participantSelect").value;
+  const vehicleType = document.getElementById("operationalVehicleFilter").value;
+  const suffix = `?cycle_id=${cycleId}` + (participantId ? `&participant_id=${participantId}` : "") + (vehicleType ? `&vehicle_type=${vehicleType}` : "");
+  const rows = await fetchJson(`/operational-vehicle-monthly${suffix}`);
+  const tbody = document.querySelector("#operationalVehicleMonthlyTable tbody");
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Sem meses calculados para este filtro.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map((r) => `
+    <tr>
+      <td>${escapeHtml(r.concessionaire || "—")}</td>
+      <td>${escapeHtml(r.vehicle_label || r.vehicle_type || "—")}</td>
+      <td>${escapeHtml(r.month || "—")}</td>
+      <td>${r.eligible ?? "—"}</td>
+      <td>${r.primary_met ?? "—"}</td>
+      <td>${r.result_percent != null ? Number(r.result_percent).toFixed(2) + "%" : "—"}</td>
+    </tr>
+  `).join("");
+}
+
+async function loadOperationalVehicle() {
+  await Promise.all([loadOperationalVehicleSummary(), loadOperationalVehicleMonthly()]);
+}
+
+function renderWorksBar(containerId, rows, field, sortField = field) {
+  const byUnit = new Map();
+  rows.forEach(row => {
+    const unit = row.unit || 'obra';
+    const grouped = byUnit.get(unit) || new Map();
+    const group = row.work_group || row.work_type || 'Sem grupo';
+    const previous = grouped.get(group) || { value: 0, orderValue: 0 };
+    grouped.set(group, {
+      value: previous.value + Number(row[field] || 0),
+      orderValue: previous.orderValue + Number(row[sortField] || 0),
+    });
+    byUnit.set(unit, grouped);
+  });
+  const target = document.getElementById(containerId);
+  const orderedUnits = [...byUnit.entries()].sort(([first], [second]) =>
+    (first === 'km' ? 0 : first === 'obra' ? 1 : 2) - (second === 'km' ? 0 : second === 'obra' ? 1 : 2)
+      || first.localeCompare(second, 'pt-BR'));
+  target.innerHTML = orderedUnits.length ? orderedUnits.map(([unit, grouped]) => {
+    const values = [...grouped.entries()].sort((a, b) => b[1].orderValue - a[1].orderValue || a[0].localeCompare(b[0], 'pt-BR'));
+    const max = Math.max(...values.map(([, item]) => item.value), 1);
+    return `<h3>Unidade: ${escapeHtml(unit)}</h3>` + values.map(([label, item]) => `<div class="bar-row"><div class="name">${escapeHtml(label)}</div><div class="bar-track"><div class="bar-fill" style="width:${item.value > 0 ? Math.max(2, item.value / max * 100) : 0}%"></div></div><div class="bar-score">${item.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div></div>`).join('');
+  }).join('') : '<div class="empty">Sem dados de obras para o filtro.</div>';
+}
+
+function worksExecutionPercent(executed, planned) {
+  if (executed == null || planned == null || !Number.isFinite(Number(executed)) || !Number.isFinite(Number(planned)) || Number(planned) === 0) return null;
+  return Number(executed) / Number(planned) * 100;
+}
+function renderWorksKpis(rows) {
+  const byUnit = new Map();
+  const issuesByUnit = new Map();
+  rows.forEach(row => {
+    const unit = row.unit || 'obra';
+    const sums = byUnit.get(unit) || [0, 0, 0, 0];
+    ['planned_accumulated', 'executed_accumulated', 'planned_year', 'executed_year'].forEach((field, index) => { sums[index] += Number(row[field] || 0); });
+    byUnit.set(unit, sums);
+    if (row.data_quality_issue) issuesByUnit.set(unit, (issuesByUnit.get(unit) || 0) + 1);
+  });
+  const formatQuantity = value => value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const formatPercent = value => value == null ? '—' : value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
+  const ordered = [...byUnit.entries()].sort(([first], [second]) => (first === 'km' ? -1 : second === 'km' ? 1 : first.localeCompare(second, 'pt-BR')));
+  return ordered.length ? ordered.map(([unit, sums]) => {
+    const incomplete = (issuesByUnit.get(unit) || 0) > 0;
+    const accumulated = incomplete ? null : worksExecutionPercent(sums[1], sums[0]);
+    const annual = incomplete ? null : worksExecutionPercent(sums[3], sums[2]);
+    const heading = unit === 'km' ? 'Extensão das obras' : unit === 'obra' ? 'Obras por unidade' : `Obras em ${unit}`;
+    const metrics = ['Previsto acumulado', 'Realizado acumulado', 'Previsto anual', 'Realizado anual'].map((label, index) =>
+      `<div class="works-metric"><span>${label}</span><strong>${formatQuantity(sums[index])}</strong><small>${escapeHtml(unit)}${incomplete && index % 2 ? ' · parcial' : ''}</small></div>`).join('');
+    const progress = [['Execução acumulada', accumulated, sums[0]], ['Execução anual', annual, sums[2]]].map(([label, percent, planned]) =>
+      `<div><div class="works-progress-label"><span>${label}</span><strong>${planned === 0 ? 'Sem previsão' : formatPercent(percent)}</strong></div><div class="works-progress-track"><i style="width:${percent == null ? 0 : Math.max(0, Math.min(100, percent))}%"></i></div></div>`).join('');
+    return `<section class="works-unit-panel" data-unit="${escapeHtml(unit)}"><header><h3>${escapeHtml(heading)}</h3><span class="works-unit-badge">${escapeHtml(unit)}</span></header><div class="works-metrics">${metrics}</div><div class="works-progress">${progress}</div>${incomplete ? '<p class="works-quality-note">Execução parcial: revise as fontes sinalizadas abaixo.</p>' : ''}</section>`;
+  }).join('') : '<p class="empty">Sem obras para o filtro selecionado.</p>';
+}
+
+let currentWorksRows = [];
+function workTypeLabel(row) {
+  return String(row.work_type || '').trim() || String(row.work_group || '').trim() || 'Sem tipo de obra';
+}
+function selectedWorkTypes() {
+  return Array.from(document.querySelectorAll('#worksTypeFilter input[data-work-type]:checked')).map(input => input.value);
+}
+function updateWorkTypeSummary() {
+  const types = selectedWorkTypes();
+  document.querySelector('#worksTypeFilter summary').textContent = types.length === 0 ? 'Todos os tipos de obra' : types.length === 1 ? types[0] : `${types.length} tipos selecionados`;
+  const all = document.querySelector('#worksTypeFilter input[data-all-work-types]');
+  if (all) all.checked = types.length === 0;
+}
+function renderFilteredWorks() {
+  const selectedTypes = new Set(selectedWorkTypes());
+  const rows = selectedTypes.size ? currentWorksRows.filter(row => selectedTypes.has(workTypeLabel(row))) : currentWorksRows;
+  const issueCount = rows.filter(row => row.data_quality_issue).length;
+  const quality = document.getElementById('worksDataQuality');
+  quality.hidden = !issueCount;
+  quality.textContent = issueCount ? `${issueCount} obra(s) com execução inconsistente: as quantidades executadas dessas linhas não entram no somatório e os totais exibidos são parciais. Confira a coluna Qualidade e a fonte antes de usar a nota.` : '';
+  document.getElementById('worksKpis').innerHTML = renderWorksKpis(rows);
+  renderWorksBar('worksChartPlannedAccumulated', rows, 'planned_accumulated');
+  renderWorksBar('worksChartExecutedAccumulated', rows, 'executed_accumulated', 'planned_accumulated');
+  renderWorksBar('worksChartPlannedYear', rows, 'planned_year');
+  renderWorksBar('worksChartExecutedYear', rows, 'executed_year', 'planned_year');
+  document.querySelector('#worksTable tbody').innerHTML = rows.length ? rows.map(row => `<tr><td>${escapeHtml(row.concessionaire)}</td><td>${escapeHtml(row.work_group)}</td><td>${escapeHtml(row.work_description)}</td><td>${escapeHtml(row.unit)}</td><td>${Number(row.planned_accumulated || 0).toLocaleString('pt-BR')}</td><td>${row.executed_accumulated == null ? 'Revisar fonte' : Number(row.executed_accumulated).toLocaleString('pt-BR')}</td><td>${row.accumulated_percent == null ? '—' : Number(row.accumulated_percent).toLocaleString('pt-BR') + '%'}</td><td>${Number(row.planned_year || 0).toLocaleString('pt-BR')}</td><td>${row.executed_year == null ? 'Revisar fonte' : Number(row.executed_year).toLocaleString('pt-BR')}</td><td>${row.annual_percent == null ? '—' : Number(row.annual_percent).toLocaleString('pt-BR') + '%'}</td><td>${escapeHtml(row.data_quality_issue || '—')}</td><td>${escapeHtml(row.source_document)}</td></tr>`).join('') : '<tr><td colspan="12" class="empty">Sem dados de obras.</td></tr>';
+}
+
+async function loadWorks() {
+  const cycleId = document.getElementById('cycleSelect').value;
+  const participantId = document.getElementById('participantSelect').value;
+  if (!cycleId) return;
+  const query = `?cycle_id=${encodeURIComponent(cycleId)}${participantId ? `&participant_id=${encodeURIComponent(participantId)}` : ''}`;
+  currentWorksRows = await fetchJson(`/works${query}`);
+  const filter = document.getElementById('worksTypeFilter');
+  const previous = selectedWorkTypes();
+  const selectedTypes = new Set(previous.length ? previous : new URLSearchParams(location.search).getAll('work_type'));
+  const types = [...new Set(currentWorksRows.map(workTypeLabel))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  filter.querySelector('.works-type-options').innerHTML = '<label><input type="checkbox" data-all-work-types> Todos os tipos de obra</label>' + types.map(type => `<label><input type="checkbox" data-work-type value="${escapeHtml(type)}" ${selectedTypes.has(type) ? 'checked' : ''}> ${escapeHtml(type)}</label>`).join('');
+  updateWorkTypeSummary();
+  renderFilteredWorks();
+}
+
+const REPORT_API_BASE = PUBLIC_LIVE ? `${DASHBOARD_PREFIX}/power-bi-direct/public/painel/reports` : `${DASHBOARD_PREFIX}/rcr-classification/reports`;
+
+function collectTablesFromPanel(panelEl, keepTable = () => true) {
+  const tables = [];
+  const roots = [panelEl, ...Array.from(panelEl.querySelectorAll("iframe")).map(frame => frame.contentDocument?.querySelector(".rcr-panel")).filter(Boolean)];
+  roots.flatMap(root => Array.from(root.querySelectorAll("table"))).forEach((tableEl) => {
+    if (!keepTable(tableEl)) return;
+    // Nested scenario tables are exported separately. Their headers and rows
+    // must never replace or contaminate the concessionaire's parent table.
+    const ownRows = Array.from(tableEl.rows).filter(row => row.closest("table") === tableEl);
+    const headerRows = ownRows.filter(row => row.parentElement.tagName === "THEAD");
+    const header = headerRows.at(-1) || ownRows.find(row => Array.from(row.cells).every(cell => cell.tagName === "TH"));
+    const ownText = cell => {
+      const copy = cell.cloneNode(true);
+      copy.querySelectorAll("table").forEach(nested => nested.remove());
+      return copy.textContent.replace(/\s+/g, " ").trim();
+    };
+    const columns = Array.from(header?.cells || []).map(ownText);
+    if (!columns.length) return;
+    const rows = ownRows.filter(row => row !== header && !headerRows.includes(row) && row.parentElement.tagName !== "TFOOT")
+      .map(row => Array.from(row.cells).map(ownText))
+      .filter(row => row.length === columns.length);
+    if (!rows.length) return;
+    const card = tableEl.closest(".card");
+    const heading = card ? card.querySelector("h2") : null;
+    const titleText = (heading ? heading.textContent : tableEl.id || "Tabela").replace(/\s+/g, " ").trim();
+    tables.push({ title: titleText, columns, rows, kind: tableEl.closest('[data-report-table-kind="detail"],[data-report-export-source],.rcr-consumer-raw-table,.maintenance-map-audit,.rcr-audit-details') || tableEl.matches('#worksTable,#consumerRawTable,#consumerMemoryRecords,#resumo3Table') ? "detail" : "summary" });
+  });
+  return tables;
+}
+
+function currentFiltersPayload() {
+  const cycleSelect = document.getElementById("cycleSelect");
+  const participantLabel = document.getElementById("participantSelect").value ? subjectLabel() : "Todas as concessionárias";
+  const cycleOption = cycleSelect.options[cycleSelect.selectedIndex];
+  const scenarioSelect = document.getElementById("scenarioSelect");
+  const scenarioOption = scenarioSelect.options[scenarioSelect.selectedIndex];
+  const groupSelect = document.getElementById("controllerGroupSelect");
+  const groupOption = groupSelect.options[groupSelect.selectedIndex];
+  return [
+    { label: "Ciclo", value: cycleOption ? cycleOption.text : "—" },
+    { label: "Cenário dos resultados", value: scenarioOption ? scenarioOption.text : "—" },
+    { label: "Grupo controlador", value: groupOption ? groupOption.text : "Todos" },
+    { label: "Concessionária", value: participantLabel },
+    { label: "Status Regulatório", value: document.querySelector('#regulatoryStatusFilter summary').textContent },
+    ...(document.querySelector('.tab-panel:not(.hidden)')?.id === 'tab-obras'
+      ? [{ label: 'Tipo de obra', value: selectedWorkTypes().join('; ') || 'Todos os tipos de obra' }]
+      : []),
+    { label: "Gerado em", value: new Date().toLocaleString("pt-BR") },
+    { label: "Fonte", value: "Banco de dados do sistema, em tempo real (Power BI direto do banco)" },
+  ];
+}
+
+function assertNativeReportReady(panel) {
+  const frames = Array.from(panel.querySelectorAll('iframe[src]')).filter(frame => frame.getAttribute('src'));
+  for (const frame of frames) {
+    const root = frame.contentDocument?.querySelector('.rcr-panel');
+    if (!root || root.getAttribute('data-report-ready') === 'false' || root.querySelector('[role="alert"],[data-report-ready="false"]')) {
+      throw new Error('A tela nativa ainda não está pronta. Aguarde o carregamento completo antes de exportar.');
+    }
+  }
+}
+
+function nativeExcelSources(panel) {
+  if (!PUBLIC_LIVE) return [];
+  const screens = new Set(['pavimento_iri','pavimento_fwd','pavimento_flecha','pavimento_ifi','pavimento_trinca','sinalizacao_horizontal','sinalizacao_vertical','drenagem','oae','mapa_levantamentos','mapa_ambulancia_c','mapa_ambulancia_d','mapa_guincho_leve','mapa_guincho_pesado']);
+  return Array.from(panel.querySelectorAll('iframe[src]')).filter(frame => frame.getAttribute('src')).flatMap(frame => {
+    const url = new URL(frame.contentWindow.location.href);
+    const screen = url.searchParams.get('screen');
+    if (!screens.has(screen)) return [];
+    const source = {screen};
+    source.regulatory_status = url.searchParams.getAll('regulatory_status');
+    for (const key of ['cycle_id','participant_id','scenario_number','controller_group','visual_filters']) {
+      if (url.searchParams.has(key)) source[key]=url.searchParams.get(key);
+    }
+    const exportedScope = frame.contentDocument?.querySelector('[data-report-export-source]')?.getAttribute('data-report-export-scope');
+    if (exportedScope && screen === 'mapa_levantamentos') {
+      const selection = JSON.parse(exportedScope);
+      source.source_scope = selection.scope || {};
+      source.visual_filters = selection.visual_filters || {};
+      source.audit_status = selection.audit_status || "";
+      source.cell = selection.cell || null;
+    }
+    return [source];
+  });
+}
+
+async function downloadReport(fileFormat, title, tables, visualPages = [], nativeSources = null) {
+  if (PUBLIC_DASHBOARD && !PUBLIC_LIVE) throw new Error("Esta publicação histórica não permite exportação.");
+  const payload = {
+    title,
+    filters: currentFiltersPayload(),
+    summaries: [`${tables.length} tabela(s) incluída(s) neste relatório.`],
+    tables,
+    visual_pages: visualPages,
+  };
+  const sources = fileFormat === 'xlsx' ? (nativeSources || nativeExcelSources(document.querySelector('.tab-panel:not(.hidden)'))) : [];
+  const nativeSource = sources.length ? new URLSearchParams({native_sources:JSON.stringify(sources)}) : null;
+  const response = await fetch(`${REPORT_API_BASE}/export/${fileFormat}${nativeSource || regulatoryStatusQuery() ? `?${nativeSource || ''}${nativeSource && regulatoryStatusQuery() ? '&' : ''}${regulatoryStatusQuery()}` : ''}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...privateDashboardAuthHeaders(`${REPORT_API_BASE}/export/${fileFormat}`) },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    let detail = "";
+    try { detail = (await response.json()).detail; } catch (err) { /* ignore */ }
+    throw new Error(detail || `Falha ao gerar relatório (HTTP ${response.status})`);
+  }
+  const blob = await response.blob();
+  const disposition = response.headers.get("Content-Disposition") || "";
+  const match = /filename="?([^"]+)"?/.exec(disposition);
+  const filename = match ? match[1] : `relatorio_power_bi.${fileFormat}`;
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  document.getElementById("exportFeedback").textContent = `Arquivo gerado: ${filename}`;
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+async function capturePanelVisuals(panel, captureScreenReport) {
+  assertNativeReportReady(panel);
+  const frames = Array.from(panel.querySelectorAll('iframe')).filter(frame => frame.getAttribute('src'));
+  const nativeRoots = frames.map(frame => frame.contentDocument?.querySelector('.rcr-panel'));
+  if (nativeRoots.some(root => !root)) throw new Error('Aguarde o carregamento completo da tela nativa antes de exportar.');
+  const pages = panel.id === 'tab-linked_screen' ? [] : await captureScreenReport(panel);
+  for (const root of nativeRoots) pages.push(...await captureScreenReport(root));
+  return pages.map((page, order) => ({...page, order}));
+}
+
+async function exportCurrentPage(fileFormat) {
+  const activePanel = document.querySelector(".tab-panel:not(.hidden)");
+  const activeTabBtn = document.querySelector(".tab-btn.active");
+  const pageTitle = activeTabBtn ? activeTabBtn.textContent.trim() : "Página";
+  if (!activePanel) throw new Error("Nenhuma página ativa encontrada.");
+  assertNativeReportReady(activePanel);
+  const nativeExcelSource = fileFormat === 'xlsx' ? nativeExcelSources(activePanel) : [];
+  let tables = collectTablesFromPanel(activePanel, table => !nativeExcelSource.length || !table.closest('[data-report-export-source],.rcr-audit-details,.maintenance-map-audit'));
+  if (!tables.length && fileFormat === "xlsx" && !nativeExcelSource.length) throw new Error("Não há dados nesta página para exportar ainda — aguarde o carregamento e tente novamente.");
+  let visualPages = [];
+  if (["pdf", "docx"].includes(fileFormat)) {
+    const {captureScreenReport, isExecutiveReportTable} = await import(`${DASHBOARD_PREFIX}/power-bi-direct/report-assets/screenReportCapture.mjs`);
+    tables = collectTablesFromPanel(activePanel, isExecutiveReportTable);
+    visualPages = await capturePanelVisuals(activePanel, captureScreenReport);
+  }
+  await downloadReport(fileFormat, `RodoviaScan · Power BI direto do banco — ${pageTitle}`, tables, visualPages);
+}
+
+async function exportAllPages(fileFormat) {
+  await loadOperationalVehicle();
+  await loadConsumerSummary();
+  await loadConsumerRaw(true);
+  await loadIndicatorCatalog();
+  await loadResumoData();
+  await loadWorks();
+  const reportModule = ["pdf", "docx"].includes(fileFormat)
+    ? await import(`${DASHBOARD_PREFIX}/power-bi-direct/report-assets/screenReportCapture.mjs`) : null;
+  const tables = [];
+  const allNativeSources = [];
+  document.querySelectorAll(".tab-panel").forEach(assertNativeReportReady);
+  document.querySelectorAll(".tab-panel").forEach((panel) => {
+    const sources = fileFormat === "xlsx" ? nativeExcelSources(panel) : [];
+    allNativeSources.push(...sources);
+    tables.push(...collectTablesFromPanel(panel, reportModule?.isExecutiveReportTable || (table => !sources.length || !table.closest('[data-report-export-source],.rcr-audit-details,.maintenance-map-audit'))));
+  });
+  if (!tables.length && fileFormat === "xlsx" && !allNativeSources.length) throw new Error("Não há dados carregados para exportar ainda — aguarde o carregamento e tente novamente.");
+  let visualPages = [];
+  if (["pdf", "docx"].includes(fileFormat)) {
+    const {captureScreenReport} = await import(`${DASHBOARD_PREFIX}/power-bi-direct/report-assets/screenReportCapture.mjs`);
+    const activePanel = document.querySelector(".tab-panel:not(.hidden)");
+    const panels = Array.from(document.querySelectorAll(".tab-panel")).filter(panel => panel.id !== "tab-linked_screen");
+    try {
+      for (const panel of panels) {
+        if (!panel.querySelector("tbody tr")) continue;
+        document.querySelectorAll(".tab-panel").forEach(item => item.classList.toggle("hidden", item !== panel));
+        document.getElementById("exportFeedback").textContent = `Capturando ${panel.querySelector("h2")?.textContent || panel.id}...`;
+        visualPages.push(...await capturePanelVisuals(panel, captureScreenReport));
+      }
+      const linked = document.querySelector("#tab-linked_screen iframe");
+      const linkedRoot = linked?.contentDocument?.querySelector(".rcr-panel");
+      if (linkedRoot) {
+        document.querySelectorAll(".tab-panel").forEach(item => item.classList.toggle("hidden", item.id !== "tab-linked_screen"));
+        assertNativeReportReady(document.querySelector("#tab-linked_screen"));
+        visualPages.push(...await captureScreenReport(linkedRoot));
+      }
+    } finally {
+      document.querySelectorAll(".tab-panel").forEach(item => item.classList.toggle("hidden", item !== activePanel));
+    }
+  }
+  await downloadReport(fileFormat, "RodoviaScan · Power BI direto do banco — Relatório das telas carregadas", tables, visualPages, allNativeSources);
+}
+
+function activateTab(tabKey, options = {}) {
+  if (tabKey === 'linked_screen' && (selectedScenarioNumber() !== 24
+      || document.getElementById('participantSelect').value || selectedRegulatoryStatuses().length || selectedControllerGroup()
+      || !archiveScreens.has(options.screenKey))) return activateTab('visao_geral');
+
+  if (tabKey === 'linked_screen' && options.screenKey === 'resumo_classificacao') return activateTab('resumo1');
+  const { indicatorKey = "", screenKey = "", vehicleType = "" } = options;
+  if (!document.getElementById(`tab-${tabKey}`)) return;
+  if (indicatorKey) document.getElementById("indicatorSelect").value = indicatorKey;
+  if (vehicleType !== undefined && document.getElementById("operationalVehicleFilter")) {
+    document.getElementById("operationalVehicleFilter").value = vehicleType;
+    activeVehicleType = vehicleType;
+  }
+  activeLinkedScreenKey = screenKey || "";
+  const effectiveIndicatorKey = document.getElementById("indicatorSelect").value;
+  highlightActiveTab(tabKey, effectiveIndicatorKey, activeLinkedScreenKey, activeVehicleType);
+  document.querySelectorAll(".tab-panel").forEach((panel) => panel.classList.toggle("hidden", panel.id !== `tab-${tabKey}`));
+  updateDashboardContext(tabKey, { indicatorKey: effectiveIndicatorKey, screenKey: activeLinkedScreenKey, vehicleType: activeVehicleType });
+  if (tabKey === "indicador_individual" && indicatorCatalogItems.length) loadIndicatorRanking().catch(showDashboardError);
+  if (tabKey === "consumidor_gov") loadConsumerSummary().catch(showDashboardError);
+  if (tabKey === "consumidor_gov_raw") loadConsumerRaw(true).catch(showDashboardError);
+  if (tabKey === "indicador_individual" && !indicatorCatalogItems.length) loadIndicatorCatalog().catch(showDashboardError);
+  if (tabKey === "ambulancia_guincho") loadOperationalVehicle().catch(showDashboardError);
+  if (tabKey === "obras") loadWorks().catch(showDashboardError);
+  if (tabKey === "linked_screen") renderLinkedScreen({
+    frameId: "linkedScreenFrame",
+    titleId: "linkedScreenTitle",
+    descriptionId: "linkedScreenDescription",
+    openLinkId: "linkedScreenOpen",
+    placeholderId: "linkedScreenPlaceholder",
+  }, activeLinkedScreenKey);
+}
+
+
+function withDashboardErrors(action) {
+  return async (...args) => {
+    document.getElementById('dashboardNotice').textContent = '';
+    try { await action(...args); }
+    catch (error) { showDashboardError(error); }
+  };
+}
+function renderDashboardAccessError(error, targetId = 'dashboardNotice') {
+  if (PUBLIC_DASHBOARD || ![401, 403].includes(error.status)) return false;
+  const passwordRequired = error.status === 403 && /troca de senha/i.test(error.message);
+  const title = passwordRequired ? 'Troca de senha obrigatória' : error.status === 401 ? 'Entre no sistema para consultar este painel' : 'Acesso não autorizado a este painel';
+  const action = passwordRequired ? 'Concluir troca de senha' : 'Abrir o sistema';
+  const target = document.getElementById(targetId);
+  target.setAttribute('role', 'alert');
+  target.innerHTML = `<div class="empty"><strong>${escapeHtml(title)}</strong><p>${escapeHtml(error.message)}</p><a href="${escapeHtml(window.location.origin + '/#/classificacao-rcr?screen=classificacao_rcr')}">${action}</a></div>`;
+  ['cycleSelect', 'controllerGroupSelect', 'participantSelect', 'scenarioSelect', 'refreshBtn'].forEach(id => {const control = document.getElementById(id);if (control) control.disabled = true;});
+  return true;
+}
+function showDashboardError(error) {
+  if (renderDashboardAccessError(error)) return;
+  document.getElementById('dashboardNotice').textContent = `Não foi possível atualizar os dados: ${error.message}. Tente Atualizar agora.`;
+}
+function scopedRows(rows) {
+  const id = document.getElementById('participantSelect').value;
+  if (!id) return rows;
+  const participant = currentParticipants.find(p => String(p.participant_id) === id);
+  return rows.filter(row => row.participant_id != null ? String(row.participant_id) === id : participant && row.concessionaire === participant.concessionaire);
+}
+function applyGlobalScope() {
+  const selectedId = document.getElementById('participantSelect').value;
+  rankingFilterConcessionaire = currentParticipants.find(p => String(p.participant_id) === selectedId)?.concessionaire || '';
+  const cycleId = document.getElementById('cycleSelect').value;
+  const cycle = cycles.find(c => String(c.cycle_id) === cycleId);
+  const classification = scopedRows(lastClassification);
+  renderKpis(cycle, scopedRows(currentParticipants), classification);
+  renderRanking(classification);
+  renderParticipantsTable(scopedRows(currentParticipants));
+  renderMacroChart(scopedRows(allCycleIndicators));
+  renderIndicatorsTable(scopedRows(allCycleIndicators));
+  updateDashboardContext();
+  updateSelectedResultMeta();
+}
+function renderIndicatorNavigation() {
+  const nav = document.getElementById("indicatorNav");
+  if (nav) nav.innerHTML = "";
+}
+function updateDashboardContext(tabKey, options = {}) {
+  const tab = tabKey || document.querySelector('.tab-panel:not(.hidden)')?.id.replace('tab-', '') || 'visao_geral';
+  // Keep native-screen context and actions in the page header, above the frame.
+  const nativeDescription = document.getElementById('linkedScreenDescription');
+  const nativeOpen = document.getElementById('linkedScreenOpen');
+  document.getElementById('activeScope').parentElement.appendChild(nativeDescription);
+  document.querySelector('.page-context').appendChild(nativeOpen);
+  nativeDescription.hidden = tab !== 'linked_screen';
+  nativeOpen.hidden = tab !== 'linked_screen';
+  const indicator = indicatorCatalogItems.find(i => i.indicator_key === document.getElementById('indicatorSelect').value);
+  const screenKey = options.screenKey ?? activeLinkedScreenKey;
+  const vehicleType = options.vehicleType ?? activeVehicleType;
+  const effectiveIndicatorKey = options.indicatorKey ?? indicator?.indicator_key ?? "";
+  const button = [...document.querySelectorAll('#tabsNav .tab-btn')].find((item) =>
+    navButtonMatches(item, { tabKey: tab, indicatorKey: effectiveIndicatorKey, screenKey, vehicleType })
+  ) || document.querySelector(`#tabsNav .tab-btn[data-tab="${tab}"]`);
+  document.getElementById('activePageTitle').textContent = tab === 'indicador_individual' && indicator ? indicator.indicator_name : button?.textContent || 'Resultados RCR';
+  document.getElementById('activeScope').textContent = `${document.getElementById('cycleSelect').selectedOptions[0]?.textContent || 'Ciclo'} · ${subjectLabel()}`;
+  const url = new URL(location.href);
+  url.searchParams.set('cycle_id', document.getElementById('cycleSelect').value);
+  const participant = document.getElementById('participantSelect').value;
+  if (participant) url.searchParams.set('participant_id', participant); else url.searchParams.delete('participant_id');
+  url.searchParams.set('tab', tab);
+  if (!PUBLIC_DASHBOARD || PUBLIC_LIVE) url.searchParams.set('scenario_number', String(selectedScenarioNumber()));
+  if (tab === 'indicador_individual' && indicator) url.searchParams.set('indicator', indicator.indicator_key); else url.searchParams.delete('indicator');
+  if (tab === 'linked_screen' && screenKey) url.searchParams.set('screen', screenKey); else url.searchParams.delete('screen');
+  if (tab === 'ambulancia_guincho' && vehicleType) url.searchParams.set('vehicle_type', vehicleType); else url.searchParams.delete('vehicle_type');
+  history.replaceState(null, '', url);
+  updateSelectedResultMeta();
+  updatePublicEnvironmentLink();
+}
+async function refreshActivePage() {
+  const tab = document.querySelector('.tab-panel:not(.hidden)')?.id;
+  if (tab === 'tab-obras') await loadWorks();
+  if (tab === 'tab-consumidor_gov') await loadConsumerSummary();
+  if (tab === 'tab-consumidor_gov_raw') await loadConsumerRaw(true);
+  if (tab === 'tab-ambulancia_guincho') await loadOperationalVehicle();
+  if (tab === 'tab-indicador_individual') await loadIndicatorRanking();
+  if (tab === 'tab-linked_screen' && activeLinkedScreenKey) {
+    renderLinkedScreen({
+      frameId: "linkedScreenFrame",
+      titleId: "linkedScreenTitle",
+      descriptionId: "linkedScreenDescription",
+      openLinkId: "linkedScreenOpen",
+      placeholderId: "linkedScreenPlaceholder",
+    }, activeLinkedScreenKey);
+  }
+  updateDashboardContext();
+}
+async function refreshDashboard() {
+  document.getElementById('dashboardNotice').textContent = '';
+  await loadCycleData();
+  await loadIndicatorCatalog();
+  updateArchiveNavigation();
+  if (activeLinkedScreenKey && document.querySelector('#tabsNav [data-tab="linked_screen"].active')?.hidden) {
+    activateTab('visao_geral');
+  } else {
+    await refreshActivePage();
+  }
+}
+
+async function init() {
+ const initialStatuses=new URLSearchParams(location.search).getAll('regulatory_status');
+ document.querySelectorAll('#regulatoryStatusFilter input[data-regulatory]').forEach(input=>{input.checked=initialStatuses.includes(input.value);});
+ updateRegulatoryStatusSummary();
+ document.getElementById('regulatoryStatusFilter').addEventListener('change',withDashboardErrors(async event=>{
+  if(event.target.matches('[data-all-regulatory]'))document.querySelectorAll('#regulatoryStatusFilter input[data-regulatory]').forEach(input=>{input.checked=false;});
+  updateRegulatoryStatusSummary();
+  document.getElementById('participantSelect').value='';
+  const url=new URL(location.href);url.searchParams.delete('participant_id');url.searchParams.delete('regulatory_status');
+  selectedRegulatoryStatuses().forEach(value=>url.searchParams.append('regulatory_status',value));history.replaceState(null,'',url);
+  await refreshDashboard();
+ }));
+  if (PUBLIC_DASHBOARD) {
+    document.querySelector("header h1").textContent = "RodoviaScan IA · Classificação RCR · Desenvolvimento C";
+    document.querySelector("header p").textContent = PUBLIC_LIVE ? "Dados lidos em tempo real do banco de dados do sistema. Atualiza automaticamente. Consulta pública somente de leitura." : "Demonstração · base fixa do Desenvolvimento C capturada em 24/11/2026 às 22h44 (horário de Brasília).";
+    document.querySelector("footer").textContent = PUBLIC_LIVE ? "RodoviaScan IA · Consulta pública do banco atual · Somente leitura." : "RodoviaScan IA · Demonstração do Desenvolvimento C · Consulta à base fixa.";
+    if (!PUBLIC_LIVE) document.querySelector(".export-bar").style.display = "none";
+  }
+  await loadCycles();
+  updateArchiveNavigation();
+  const params = new URLSearchParams(location.search);
+  const requestedCycleId = params.get("cycle_id");
+  const requestedParticipantId = params.get("participant_id");
+  if (!requestedCycleId) {
+    const preferred = cycles.find(c => Number(c.cycle_year) === new Date().getFullYear() && c.participant_count > 0) || cycles.find(c => c.participant_count > 0);
+    if (preferred) document.getElementById("cycleSelect").value = String(preferred.cycle_id);
+  }
+  if (requestedCycleId && cycles.some((c) => String(c.cycle_id) === String(requestedCycleId))) {
+    document.getElementById("cycleSelect").value = requestedCycleId;
+  }
+  if (cycles.length) {
+    await loadControllerGroups();
+    await loadScenarioSelect();
+    await loadCycleData();
+    if (requestedParticipantId) {
+      const select = document.getElementById("participantSelect");
+      if ([...select.options].some((opt) => opt.value === String(requestedParticipantId))) {
+        select.value = requestedParticipantId;
+        await loadResumoData();
+        applyGlobalScope();
+      }
+    }
+    await loadIndicatorCatalog();
+  }
+  if (params.get('tab')) {
+    activateTab(params.get('tab'), {
+      indicatorKey: params.get('indicator') || '',
+      screenKey: params.get('screen') || '',
+      vehicleType: params.get('vehicle_type') || '',
+    });
+  }
+  document.getElementById("cycleSelect").addEventListener("change", withDashboardErrors(async () => {
+    await loadControllerGroups();
+    await loadScenarioSelect();
+    await loadCycleData();
+    indicatorCatalogItems = [];
+    await loadIndicatorCatalog();
+    await refreshActivePage();
+  }));
+  document.getElementById("participantSelect").addEventListener("change", withDashboardErrors(async () => {
+    applyGlobalScope();
+    updateArchiveNavigation();
+    if (activeLinkedScreenKey && document.querySelector('#tabsNav [data-tab="linked_screen"].active')?.hidden) {
+      activateTab('visao_geral');
+    }
+    await loadResumoData();
+    await loadIndicatorRanking();
+    const activePanel = document.querySelector(".tab-panel:not(.hidden)");
+    if (activePanel && activePanel.id === "tab-consumidor_gov") await loadConsumerSummary();
+    if (activePanel && activePanel.id === "tab-consumidor_gov_raw") await loadConsumerRaw(true);
+    if (activePanel && activePanel.id === "tab-ambulancia_guincho") await loadOperationalVehicle();
+    if (activePanel && activePanel.id === "tab-obras") await loadWorks();
+    if (activePanel && activePanel.id === "tab-linked_screen" && activeLinkedScreenKey) {
+      renderLinkedScreen({
+        frameId: "linkedScreenFrame",
+        titleId: "linkedScreenTitle",
+        descriptionId: "linkedScreenDescription",
+        openLinkId: "linkedScreenOpen",
+        placeholderId: "linkedScreenPlaceholder",
+      }, activeLinkedScreenKey);
+    }
+  }));
+  document.getElementById('controllerGroupSelect').addEventListener('change',withDashboardErrors(async()=>{
+    sessionStorage.setItem('rodoviascan.controller-group',selectedControllerGroup());
+    document.getElementById('participantSelect').value='';
+    const url=new URL(location.href);url.searchParams.set('controller_group',selectedControllerGroup());url.searchParams.delete('participant_id');history.replaceState(null,'',url);
+    await refreshDashboard();
+  }));
+  document.getElementById("scenarioSelect").addEventListener("change", withDashboardErrors(async () => {
+    const previousNumber=Number(lastClassification[0]?.selected_scenario_number || 24);
+    const controls=['cycleSelect','controllerGroupSelect','participantSelect','scenarioSelect','refreshBtn','exportPageBtn','exportAllBtn'].map(id=>document.getElementById(id));
+    const disabled=controls.map(control=>control.disabled);
+    controls.forEach(control=>control.disabled=true);
+    document.querySelector('main').setAttribute('aria-busy','true');
+    try {
+      sessionStorage.setItem('rodoviascan.result-scenario',String(selectedScenarioNumber()));
+      const url=new URL(location.href);url.searchParams.set('scenario_number',String(selectedScenarioNumber()));history.replaceState(null,'',url);
+      await refreshDashboard();
+    } catch(error) {
+      document.getElementById('scenarioSelect').value=String(previousNumber);
+      sessionStorage.setItem('rodoviascan.result-scenario',String(previousNumber));
+      const url=new URL(location.href);url.searchParams.set('scenario_number',String(previousNumber));history.replaceState(null,'',url);
+      throw error;
+    } finally {
+      controls.forEach((control,index)=>control.disabled=disabled[index]);
+      document.querySelector('main').removeAttribute('aria-busy');
+    }
+  }));
+  document.getElementById("refreshBtn").addEventListener("click", () => refreshDashboard().catch(showDashboardError));
+  document.getElementById('worksTypeFilter').addEventListener('change', event => {
+    const url = new URL(location.href);
+    if (event.target.matches('input[data-all-work-types]')) {
+      document.querySelectorAll('#worksTypeFilter input[data-work-type]').forEach(input => {input.checked = false;});
+    }
+    updateWorkTypeSummary();
+    url.searchParams.delete('work_type');
+    selectedWorkTypes().forEach(value => url.searchParams.append('work_type', value));
+    history.replaceState(null, '', url);
+    renderFilteredWorks();
+  });
+  document.getElementById("macroFilterResumo2").addEventListener("change", withDashboardErrors(loadResumoData));
+  document.querySelectorAll("[data-comparison-order]").forEach(button => {
+    button.addEventListener("click", () => {
+      comparisonOrder = button.dataset.comparisonOrder;
+      document.querySelectorAll("[data-comparison-order]").forEach(item => {
+        item.setAttribute("aria-pressed", String(item.dataset.comparisonOrder === comparisonOrder));
+      });
+      renderMacroSummary(lastMacroSummary);
+      loadIndicatorRanking().catch(showDashboardError);
+    });
+  });
+  document.getElementById("indicatorSelect").addEventListener("change", () => {
+    activeLinkedScreenKey = "";
+    updateDashboardContext("indicador_individual", { indicatorKey: document.getElementById("indicatorSelect").value });
+    highlightActiveTab("indicador_individual", document.getElementById("indicatorSelect").value, "", activeVehicleType);
+    loadIndicatorRanking().catch(showDashboardError);
+  });
+  document.getElementById("operationalVehicleFilter").addEventListener("change", () => {
+    activeVehicleType = document.getElementById("operationalVehicleFilter").value;
+    highlightActiveTab("ambulancia_guincho", document.getElementById("indicatorSelect").value, "", activeVehicleType);
+    updateDashboardContext("ambulancia_guincho", { vehicleType: activeVehicleType });
+    loadOperationalVehicleMonthly().catch(showDashboardError);
+  });
+  document.getElementById("consumerRawPrev").addEventListener("click", () => {
+    consumerRawOffset = Math.max(0, consumerRawOffset - CONSUMER_RAW_LIMIT);
+    loadConsumerRaw(false).catch(showDashboardError);
+  });
+  document.getElementById("consumerRawNext").addEventListener("click", () => {
+    consumerRawOffset += CONSUMER_RAW_LIMIT;
+    loadConsumerRaw(false).catch(showDashboardError);
+  });
+  document.getElementById("tabsNav").addEventListener("click", (event) => {
+    const btn = event.target.closest(".tab-btn");
+    if (btn) activateTab(btn.dataset.tab, {
+      indicatorKey: btn.dataset.indicator || "",
+      screenKey: btn.dataset.screen || "",
+      vehicleType: btn.dataset.vehicleType || "",
+    });
+  });
+  document.getElementById("rankingChart").addEventListener("click", (event) => {
+    const row = event.target.closest(".bar-row-clickable");
+    if (!row) return;
+    const name = row.dataset.concessionaire;
+    const participant = currentParticipants.find(p => p.concessionaire === name);
+    if (!participant) return;
+    const select = document.getElementById('participantSelect');
+    select.value = select.value === String(participant.participant_id) ? '' : String(participant.participant_id);
+    select.dispatchEvent(new Event('change'));
+  });
+  document.getElementById("exportPageBtn").addEventListener("click", async () => {
+    const btn = document.getElementById("exportPageBtn");
+    const original = btn.textContent;
+    btn.disabled = true; btn.textContent = "Gerando...";
+    document.getElementById("exportFeedback").textContent = "Preparando relatório com os filtros selecionados...";
+    try {
+      await exportCurrentPage(document.getElementById("exportPageFormat").value);
+    } catch (err) {
+      const feedback = document.getElementById("exportFeedback");
+      feedback.textContent = err.message;
+      feedback.setAttribute("role", "alert");
+    } finally {
+      btn.disabled = false; btn.textContent = original;
+    }
+  });
+  document.getElementById("exportAllBtn").addEventListener("click", async () => {
+    const btn = document.getElementById("exportAllBtn");
+    const original = btn.textContent;
+    btn.disabled = true; btn.textContent = "Gerando...";
+    document.getElementById("exportFeedback").textContent = "Preparando relatório com os filtros selecionados...";
+    try {
+      await exportAllPages(document.getElementById("exportAllFormat").value);
+    } catch (err) {
+      const feedback = document.getElementById("exportFeedback");
+      feedback.textContent = err.message;
+      feedback.setAttribute("role", "alert");
+    } finally {
+      btn.disabled = false; btn.textContent = original;
+    }
+  });
+  document.getElementById("resultMetaCloseBtn").addEventListener("click", closeResultMetadataModal);
+  document.getElementById("resultMetaModal").addEventListener("mousedown", (event) => {
+    if (event.target === event.currentTarget) closeResultMetadataModal();
+  });
+}
+
+init().catch((err) => {
+  if (renderDashboardAccessError(err, 'kpiRow')) return;
+  document.getElementById("kpiRow").innerHTML = `<div class="empty">Erro ao carregar dados: ${escapeHtml(err.message)}</div>`;
+});
+
+function initializeColumnSizing() {
+  document.querySelectorAll('table[id]').forEach(table => {
+    const headers = [...table.querySelectorAll('thead tr:first-child th')];
+    if (!headers.length || table.dataset.resizable) return;
+    table.dataset.resizable = 'true';
+    table.classList.add('resizable-table');
+    const storageKey = 'rodoviascan.column-widths.v1.' + table.id;
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem(storageKey) || '{}') || {}; } catch (_) {}
+    const group = document.createElement('colgroup');
+    const widths = headers.map((th,i) => {
+      const label = th.textContent.trim();
+      const fallback = /descri|observa/i.test(label) ? 360 : /nome|indicador|concession|grupo/i.test(label) ? 200 : /nível|nota/i.test(label) ? 80 : 145;
+      const key = i + ':' + label;
+      const width = Number(saved[key]);
+      return {key, fallback, value:Number.isFinite(width) && width>=60 && width<=900 ? width : fallback};
+    });
+    widths.forEach(item => {const col=document.createElement('col');col.style.width=item.value+'px';group.appendChild(col);});
+    table.prepend(group);
+    const apply = () => {widths.forEach((item,i)=>group.children[i].style.width=item.value+'px');table.style.width=widths.reduce((sum,item)=>sum+item.value,0)+'px';};
+    const persist = () => {try{localStorage.setItem(storageKey,JSON.stringify(Object.fromEntries(widths.map(item=>[item.key,item.value]))));}catch(_){}};
+    headers.forEach((th,i) => {
+      const handle=document.createElement('span');
+      handle.className='column-resizer';handle.tabIndex=0;handle.setAttribute('role','separator');handle.setAttribute('aria-orientation','vertical');
+      handle.setAttribute('aria-label','Ajustar largura: '+th.textContent.trim());handle.title='Arraste para ajustar; duplo clique restaura. Setas esquerda/direita também ajustam.';
+      handle.addEventListener('pointerdown',event=>{
+        if(event.button!==0)return;
+        event.preventDefault();event.stopPropagation();
+        const start=event.clientX, initial=group.children[i].getBoundingClientRect().width || widths[i].value;
+        handle.setPointerCapture(event.pointerId);
+        const move=e=>{widths[i].value=Math.max(60,Math.min(900,Math.round(initial+e.clientX-start)));apply();};
+        const done=()=>{handle.removeEventListener('pointermove',move);handle.removeEventListener('pointerup',done);handle.removeEventListener('pointercancel',done);persist();};
+        handle.addEventListener('pointermove',move);handle.addEventListener('pointerup',done);handle.addEventListener('pointercancel',done);
+      });
+      handle.addEventListener('dblclick',event=>{event.stopPropagation();widths[i].value=widths[i].fallback;apply();persist();});
+      handle.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home'].includes(event.key))return;event.preventDefault();widths[i].value=event.key==='Home'?widths[i].fallback:Math.max(60,Math.min(900,widths[i].value+(event.key==='ArrowRight'?10:-10)));apply();persist();});
+      th.appendChild(handle);
+    });
+    apply();
+  });
+}
+initializeColumnSizing();
+
+document.getElementById('rankingBasis').addEventListener('change',()=>renderRanking(scopedRows(lastClassification)));
+
+</script>
+</body>
+</html>

@@ -1,0 +1,246 @@
+{
+  "scope": "Seed, cycle 1, scenario 24, default filters. Does not certify full map coverage.",
+  "source_stable": true,
+  "responses": [
+    {
+      "route": "native-view/configuracao_ciclo",
+      "params": {},
+      "asset": {
+        "path": "data/467715224a105c3cbc1db446d0a987ca3820788db7041729ffcbb3974b6bfa60.json",
+        "sha256": "467715224a105c3cbc1db446d0a987ca3820788db7041729ffcbb3974b6bfa60",
+        "rows": 0,
+        "bytes": 1197
+      }
+    },
+    {
+      "route": "native-view/configuracao_participantes",
+      "params": {},
+      "asset": {
+        "path": "data/31185b5732c4a4e8b7eb87d047237b14c8374b9cb62e7532690cfe38a6feb6aa.json",
+        "sha256": "31185b5732c4a4e8b7eb87d047237b14c8374b9cb62e7532690cfe38a6feb6aa",
+        "rows": 0,
+        "bytes": 14369
+      }
+    },
+    {
+      "route": "native-view/lista_concessoes",
+      "params": {},
+      "asset": {
+        "path": "data/004fa3f2c5d2a78bd267234fbade25f15a8b6645df22b07784852d8d8a6dd9a3.json",
+        "sha256": "004fa3f2c5d2a78bd267234fbade25f15a8b6645df22b07784852d8d8a6dd9a3",
+        "rows": 0,
+        "bytes": 11640
+      }
+    },
+    {
+      "route": "native-view/configuracao_fatores",
+      "params": {},
+      "asset": {
+        "path": "data/1c570079e4198f63bde4cbf82388d23e5757a4c16df06ae669e02cd4fe3c1c8b.json",
+        "sha256": "1c570079e4198f63bde4cbf82388d23e5757a4c16df06ae669e02cd4fe3c1c8b",
+        "rows": 0,
+        "bytes": 161056
+      }
+    },
+    {
+      "route": "native-view/consultoria_anexo_iv",
+      "params": {},
+      "asset": {
+        "path": "data/42dc609908f870439f52c4b776060cd89d0339dcf3fb0087a50990d221bba9a4.json",
+        "sha256": "42dc609908f870439f52c4b776060cd89d0339dcf3fb0087a50990d221bba9a4",
+        "rows": 0,
+        "bytes": 82858
+      }
+    },
+    {
+      "route": "native-view/quadro_notas_resolucao",
+      "params": {},
+      "asset": {
+        "path": "data/9a0d562917a155f9482c8e5ee6466cf8bc52fefd788641b921e13df28b92d53c.json",
+        "sha256": "9a0d562917a155f9482c8e5ee6466cf8bc52fefd788641b921e13df28b92d53c",
+        "rows": 0,
+        "bytes": 17668
+      }
+    },
+    {
+      "route": "native-view/pesos_sucon_pavimento",
+      "params": {},
+      "asset": {
+        "path": "data/923a62fee590f725a72cb95b1da3d9a191745b9126796b88e08d5cf44ff8c163.json",
+        "sha256": "923a62fee590f725a72cb95b1da3d9a191745b9126796b88e08d5cf44ff8c163",
+        "rows": 0,
+        "bytes": 1004
+      }
+    },
+    {
+      "route": "native-view/operacao_parametros",
+      "params": {},
+      "asset": {
+        "path": "data/91dc3a01b839e5cca6ac01b922a5c446ca356c60378dca5adfb7cc5dfef51614.json",
+        "sha256": "91dc3a01b839e5cca6ac01b922a5c446ca356c60378dca5adfb7cc5dfef51614",
+        "rows": 0,
+        "bytes": 110909
+      }
+    },
+    {
+      "route": "native-view/engenharia_parametros",
+      "params": {},
+      "asset": {
+        "path": "data/9f33fc451cb78814cd33c530a23c9b2378bbb4cc8392dd147a07b169ab4589c1.json",
+        "sha256": "9f33fc451cb78814cd33c530a23c9b2378bbb4cc8392dd147a07b169ab4589c1",
+        "rows": 0,
+        "bytes": 4970460
+      }
+    },
+    {
+      "route": "native-view/classificacao_rcr",
+      "params": {},
+      "asset": {
+        "path": "data/3f4d618a7bcc2f70ee498c6e208c6ca8d1cc0299181cc7a89d817dfe64acef8a.json",
+        "sha256": "3f4d618a7bcc2f70ee498c6e208c6ca8d1cc0299181cc7a89d817dfe64acef8a",
+        "rows": 0,
+        "bytes": 1051483
+      }
+    },
+    {
+      "route": "native-view/escopo_indicadores",
+      "params": {},
+      "asset": {
+        "path": "data/f67029d648eb91104ea066923df75017fb262abc2e8a0d9ae4c058250beb0218.json",
+        "sha256": "f67029d648eb91104ea066923df75017fb262abc2e8a0d9ae4c058250beb0218",
+        "rows": 0,
+        "bytes": 1051484
+      }
+    },
+    {
+      "route": "native-view/power_bi_cenarios",
+      "params": {},
+      "asset": {
+        "path": "data/0b3717adad6be177fae7359b3d141557cdeea816043fce09d87c28a1b9bcce21.json",
+        "sha256": "0b3717adad6be177fae7359b3d141557cdeea816043fce09d87c28a1b9bcce21",
+        "rows": 0,
+        "bytes": 18632485
+      }
+    },
+    {
+      "route": "native-view/publicacao_rcr",
+      "params": {},
+      "asset": {
+        "path": "data/0ad1f061688c2b8f5e5184cb3fd16c7b5a709a67928f17dbed2e0359b4ede4b4.json",
+        "sha256": "0ad1f061688c2b8f5e5184cb3fd16c7b5a709a67928f17dbed2e0359b4ede4b4",
+        "rows": 0,
+        "bytes": 1051480
+      }
+    },
+    {
+      "route": "native-view/ida_resultado",
+      "params": {},
+      "asset": {
+        "path": "data/3ca8422deac79ebac2736d5ecbcbf590821da42df51ad1a1a6de306305eaa059.json",
+        "sha256": "3ca8422deac79ebac2736d5ecbcbf590821da42df51ad1a1a6de306305eaa059",
+        "rows": 0,
+        "bytes": 1063645
+      }
+    },
+    {
+      "route": "native-view/pavimento_iri",
+      "params": {},
+      "asset": {
+        "path": "data/c90edfe72fe2cca98167cb28fa42ea4e980f1268e1769df3e2c50f1b7cef350c.json",
+        "sha256": "c90edfe72fe2cca98167cb28fa42ea4e980f1268e1769df3e2c50f1b7cef350c",
+        "rows": 0,
+        "bytes": 1087981
+      }
+    },
+    {
+      "route": "native-view/pavimento_fwd",
+      "params": {},
+      "asset": {
+        "path": "data/b670238464f43719e77f0217c1a026e08ba87152f9fdc72de9e3fb2b39eb7ef5.json",
+        "sha256": "b670238464f43719e77f0217c1a026e08ba87152f9fdc72de9e3fb2b39eb7ef5",
+        "rows": 0,
+        "bytes": 1086790
+      }
+    },
+    {
+      "route": "native-view/pavimento_flecha",
+      "params": {},
+      "asset": {
+        "path": "data/b305d3a4734fe25d0ce390d6e73f8d72c82f15558c593be58954f6b50d1905a5.json",
+        "sha256": "b305d3a4734fe25d0ce390d6e73f8d72c82f15558c593be58954f6b50d1905a5",
+        "rows": 0,
+        "bytes": 1087903
+      }
+    },
+    {
+      "route": "native-view/pavimento_ifi",
+      "params": {},
+      "asset": {
+        "path": "data/71f8a5b62f1584ec9d5ef68de5803be5c1c263862069ca65e167f93a4627ac26.json",
+        "sha256": "71f8a5b62f1584ec9d5ef68de5803be5c1c263862069ca65e167f93a4627ac26",
+        "rows": 0,
+        "bytes": 1098839
+      }
+    },
+    {
+      "route": "native-view/pavimento_trinca",
+      "params": {},
+      "asset": {
+        "path": "data/791d71a4b85bf6b28dea86e902ceb8e9f6a968080ff186fd7324fd8e6aa62e80.json",
+        "sha256": "791d71a4b85bf6b28dea86e902ceb8e9f6a968080ff186fd7324fd8e6aa62e80",
+        "rows": 0,
+        "bytes": 1098770
+      }
+    },
+    {
+      "route": "native-view/sinalizacao_horizontal",
+      "params": {},
+      "asset": {
+        "path": "data/818956dd94f960694578fc197327ecfb6721c0671007e86ecbeb955478100849.json",
+        "sha256": "818956dd94f960694578fc197327ecfb6721c0671007e86ecbeb955478100849",
+        "rows": 0,
+        "bytes": 1107604
+      }
+    },
+    {
+      "route": "native-view/sinalizacao_vertical",
+      "params": {},
+      "asset": {
+        "path": "data/e8bdc4b90bb824fa70267d1c027352c97b117bf0dedd0f92ed99001aa1135f73.json",
+        "sha256": "e8bdc4b90bb824fa70267d1c027352c97b117bf0dedd0f92ed99001aa1135f73",
+        "rows": 0,
+        "bytes": 1140525
+      }
+    },
+    {
+      "route": "native-view/drenagem",
+      "params": {},
+      "asset": {
+        "path": "data/42539a883ec74e60c4abcdac12d3e7911d5d8c6e4cd0e666e92cdf299c1f35ee.json",
+        "sha256": "42539a883ec74e60c4abcdac12d3e7911d5d8c6e4cd0e666e92cdf299c1f35ee",
+        "rows": 0,
+        "bytes": 1119796
+      }
+    },
+    {
+      "route": "native-view/oae",
+      "params": {},
+      "asset": {
+        "path": "data/dad3729ddafa9eece758a3dffc2d37570da20aeab242590819b76fb48a2c032b.json",
+        "sha256": "dad3729ddafa9eece758a3dffc2d37570da20aeab242590819b76fb48a2c032b",
+        "rows": 0,
+        "bytes": 1103336
+      }
+    },
+    {
+      "route": "native-view/ida",
+      "params": {},
+      "asset": {
+        "path": "data/6f942b078bbc8e6a3b5f5c3b2deacbff45ec828d871375512c4e165fad897e09.json",
+        "sha256": "6f942b078bbc8e6a3b5f5c3b2deacbff45ec828d871375512c4e165fad897e09",
+        "rows": 0,
+        "bytes": 1063635
+      }
+    }
+  ]
+}
