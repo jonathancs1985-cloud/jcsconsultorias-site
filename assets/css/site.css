@@ -168,6 +168,8 @@ p{margin:0;text-wrap:pretty}
 .demo-video{margin:96px 0 0}
 .demo-video video{width:100%;border-radius:18px;background:var(--marinho-950);box-shadow:var(--sombra);aspect-ratio:16/9}
 .demo-video figcaption{margin-top:12px;color:var(--tinta-2);font-size:15px}
+.caso-real-video{margin-top:34px}
+.caso-real-trecho{display:block;width:fit-content;margin-top:10px;font-weight:700}
 
 .modais{list-style:none;margin:36px 0 0;padding:0;display:flex;flex-wrap:wrap;border:1px solid var(--regra);border-radius:999px;width:max-content;max-width:100%;overflow:hidden}
 .modais li{padding:12px 20px;font-weight:600;font-size:15px;border-right:1px solid var(--regra)}
